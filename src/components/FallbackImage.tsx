@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { View, StyleSheet, ViewStyle, ImageStyle, StyleProp } from 'react-native';
 import { Image, ImageContentFit } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -36,7 +36,7 @@ export default function FallbackImage({
   return (
     <Image
       source={{ uri }}
-      style={[{ borderRadius }, style]}
+      style={[{ borderRadius }, style] as StyleProp<ImageStyle>}
       contentFit={contentFit}
       transition={150}
       onError={() => setFailed(true)}

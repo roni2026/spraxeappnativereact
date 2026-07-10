@@ -140,6 +140,11 @@ export default function AccountScreen() {
         <Text style={styles.linkText}>My Wishlist</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
       </TouchableOpacity>
+      <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Support')}>
+        <Ionicons name="headset-outline" size={22} color={colors.navy900} />
+        <Text style={styles.linkText}>Help & Support</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={20} color={colors.destructive} />

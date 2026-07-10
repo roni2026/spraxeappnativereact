@@ -17,4 +17,5 @@ export type RootStackParamList = {
   Orders: undefined;
   OrderDetail: { orderId: string; orderNumber?: string };
   Wishlist: undefined;
+  Support: undefined;
 };

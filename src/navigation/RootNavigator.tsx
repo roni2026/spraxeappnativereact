@@ -11,6 +11,7 @@ import ProductDetailScreen from '../screens/products/ProductDetailScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
 import WishlistScreen from '../screens/wishlist/WishlistScreen';
+import SupportScreen from '../screens/support/SupportScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -46,6 +47,7 @@ export default function RootNavigator() {
         options={({ route }) => ({ title: route.params?.orderNumber ?? 'Order Details' })}
       />
       <Stack.Screen name="Wishlist" component={WishlistScreen} options={{ title: 'My Wishlist' }} />
+      <Stack.Screen name="Support" component={SupportScreen} options={{ title: 'Help & Support' }} />
     </Stack.Navigator>
   );
 }
