@@ -77,30 +77,36 @@ eas build -p android --profile development   # or --profile production
 Install the resulting build on a **physical Android device** and sign in. On first launch it
 asks for notification permission and saves the token to `profiles.fcm_token`.
 
-## 5. Deploy the Edge Function (the sender)
+## 5. Deploy the Edge Function(s) (the sender)
 
 From the `spraxe-web` repo:
 
 ```bash
 supabase functions deploy notify-order-events
+supabase functions deploy notify-support-events   # staff alerts for tickets & messages
 ```
 
-`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to the function automatically.
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to the functions automatically.
 
-## 6. Fire the function on order changes (Database Webhook)
+## 6. Fire the functions on changes (Database Webhooks)
 
-Supabase dashboard → **Database** → **Webhooks** → **Create a new hook**:
+Supabase dashboard → **Database** → **Webhooks** → **Create a new hook** for each:
 
-- **Table:** `orders`
-- **Events:** ✅ Insert  ✅ Update
-- **Type:** Supabase Edge Function → `notify-order-events`
-- **HTTP Headers:** add `Authorization: Bearer <YOUR_SERVICE_ROLE_KEY>`
-  (or deploy with `supabase functions deploy notify-order-events --no-verify-jwt`)
+| Hook | Table | Events | Edge Function |
+|---|---|---|---|
+| Orders | `orders` | Insert + Update | `notify-order-events` |
+| New tickets | `support_tickets` | Insert | `notify-support-events` |
+| New messages | `support_messages` | Insert | `notify-support-events` |
+
+For each hook, either add an HTTP header `Authorization: Bearer <YOUR_SERVICE_ROLE_KEY>`,
+or deploy that function with `--no-verify-jwt`.
 
 That's it. Now:
 
 - Changing an order's status in the Support app or web admin → the customer gets a push.
 - A customer placing an order → staff get a push.
+- A customer opening a ticket or sending a chat message → staff get a push
+  (staff replies are ignored, so you don't notify yourselves).
 
 ---
 
