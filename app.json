@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Spraxe",
+    "slug": "spraxe",
+    "scheme": "spraxe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#1E3A8A"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.spraxe.app"
+    },
+    "android": {
+      "package": "com.spraxe.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#1E3A8A"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-image"]
+  }
+}
