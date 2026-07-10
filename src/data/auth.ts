@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types/models';
+import { syncPushToken } from '../lib/push';
 
 /** Normalize a Bangladeshi number to E.164 (+880...), matching the website/original app. */
 function normalizePhone(raw: string): string {
@@ -99,11 +100,14 @@ export async function updateProfile(profile: Profile): Promise<void> {
   if (error) throw error;
 }
 
-/** Push notifications are stubbed in Expo Go — kept as a no-op so callers stay unchanged. */
-export async function saveFcmToken(_token: string): Promise<void> {
-  // No FCM in Expo Go. Wire up expo-notifications in a custom build to enable this.
+/** Persist an Expo push token on the current user's profile (profiles.fcm_token). */
+export async function saveFcmToken(token: string): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+  await supabase.from('profiles').update({ fcm_token: token }).eq('id', userId);
 }
 
+/** Register this device for push notifications and sync its token to the profile. */
 export async function syncFcmToken(): Promise<void> {
-  // No-op stub (see saveFcmToken).
+  await syncPushToken();
 }

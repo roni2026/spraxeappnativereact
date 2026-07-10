@@ -27,6 +27,13 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#1E3A8A"
+        }
+      ]
+    ]
   }
 }
