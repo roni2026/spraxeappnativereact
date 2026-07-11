@@ -14,10 +14,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { signUpWithEmail } from '../../data/auth';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
 export default function RegisterScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,11 +29,11 @@ export default function RegisterScreen({ navigation }: Props) {
 
   const handleRegister = async () => {
     if (!fullName.trim() || !email.trim() || !password) {
-      setError('Please fill in all fields');
+      setError(t('auth.pleaseFillAllFields'));
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('auth.passwordMinLength'));
       return;
     }
     setLoading(true);
@@ -39,10 +41,10 @@ export default function RegisterScreen({ navigation }: Props) {
     setInfo(null);
     try {
       await signUpWithEmail(email.trim(), password, fullName.trim());
-      setInfo('Account created! Please check your email to confirm, then sign in.');
+      setInfo(t('auth.accountCreated'));
       setTimeout(() => navigation.goBack(), 1500);
     } catch (e: any) {
-      setError(e?.message ?? 'Registration failed');
+      setError(e?.message ?? t('auth.registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -54,21 +56,21 @@ export default function RegisterScreen({ navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Create your account</Text>
-        <Text style={styles.subtitle}>Join Spraxe and start shopping</Text>
+        <Text style={styles.title}>{t('auth.createYourAccount')}</Text>
+        <Text style={styles.subtitle}>{t('auth.joinSpraxe')}</Text>
 
         {error && <Text style={styles.error}>{error}</Text>}
         {info && <Text style={styles.info}>{info}</Text>}
 
-        <Text style={styles.label}>Full Name</Text>
+        <Text style={styles.label}>{t('auth.fullName')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Your name"
+          placeholder={t('auth.fullName')}
           placeholderTextColor={colors.gray600}
           value={fullName}
           onChangeText={setFullName}
         />
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>{t('auth.email')}</Text>
         <TextInput
           style={styles.input}
           placeholder="you@example.com"
@@ -78,10 +80,10 @@ export default function RegisterScreen({ navigation }: Props) {
           value={email}
           onChangeText={setEmail}
         />
-        <Text style={styles.label}>Password</Text>
+        <Text style={styles.label}>{t('auth.password')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="At least 6 characters"
+          placeholder={t('auth.passwordMinLength')}
           placeholderTextColor={colors.gray600}
           secureTextEntry
           value={password}
@@ -92,14 +94,14 @@ export default function RegisterScreen({ navigation }: Props) {
           {loading ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.primaryBtnText}>Create Account</Text>
+            <Text style={styles.primaryBtnText}>{t('auth.createAccount')}</Text>
           )}
         </TouchableOpacity>
 
         <View style={styles.loginRow}>
-          <Text style={styles.muted}>Already have an account? </Text>
+          <Text style={styles.muted}>{t('auth.alreadyHaveAccount')}</Text>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.link}>Sign In</Text>
+            <Text style={styles.link}>{t('auth.signIn')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

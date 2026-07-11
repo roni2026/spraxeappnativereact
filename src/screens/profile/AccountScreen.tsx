@@ -17,10 +17,13 @@ import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { signOut, updateProfile } from '../../data/auth';
 import { Profile } from '../../types/models';
+import { useTranslation } from 'react-i18next';
+import LanguageToggle from '../../components/LanguageToggle';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function AccountScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { userId, profile, refreshProfile } = useAuth();
 
@@ -41,9 +44,9 @@ export default function AccountScreen() {
     return (
       <View style={styles.center}>
         <Ionicons name="person-circle-outline" size={64} color={colors.gray600} />
-        <Text style={styles.emptyTitle}>Sign in to manage your account</Text>
+        <Text style={styles.emptyTitle}>{t('profile.signInToManage')}</Text>
         <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.primaryBtnText}>Sign In</Text>
+          <Text style={styles.primaryBtnText}>{t('auth.signIn')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -61,19 +64,19 @@ export default function AccountScreen() {
       };
       await updateProfile(updated);
       await refreshProfile();
-      Alert.alert('Saved', 'Your profile has been updated.');
+      Alert.alert(t('profile.saved'), t('profile.profileUpdated'));
     } catch (e: any) {
-      Alert.alert('Error', e?.message ?? 'Could not save profile');
+      Alert.alert(t('profile.error'), e?.message ?? t('profile.couldNotSaveProfile'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleLogout = async () => {
-    Alert.alert('Log out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('profile.logoutTitle'), t('profile.logoutConfirm'), [
+      { text: t('profile.cancel'), style: 'cancel' },
       {
-        text: 'Log Out',
+        text: t('profile.logout'),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -90,20 +93,20 @@ export default function AccountScreen() {
     <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
       <View style={styles.avatarWrap}>
         <Ionicons name="person-circle" size={72} color={colors.navy900} />
-        <Text style={styles.name}>{profile?.full_name || 'Your Account'}</Text>
+        <Text style={styles.name}>{profile?.full_name || t('profile.yourAccount')}</Text>
         {profile?.email ? <Text style={styles.email}>{profile.email}</Text> : null}
       </View>
 
-      <Text style={styles.sectionTitle}>Profile</Text>
-      <Text style={styles.label}>Full Name</Text>
+      <Text style={styles.sectionTitle}>{t('profile.profile')}</Text>
+      <Text style={styles.label}>{t('auth.fullName')}</Text>
       <TextInput
         style={styles.input}
         value={fullName}
         onChangeText={setFullName}
-        placeholder="Your name"
+        placeholder={t('auth.fullName')}
         placeholderTextColor={colors.gray600}
       />
-      <Text style={styles.label}>Phone</Text>
+      <Text style={styles.label}>{t('auth.phone')}</Text>
       <TextInput
         style={styles.input}
         value={phone}
@@ -112,12 +115,12 @@ export default function AccountScreen() {
         placeholderTextColor={colors.gray600}
         keyboardType="phone-pad"
       />
-      <Text style={styles.label}>Address</Text>
+      <Text style={styles.label}>{t('profile.address')}</Text>
       <TextInput
         style={[styles.input, styles.multiline]}
         value={address}
         onChangeText={setAddress}
-        placeholder="Your shipping address"
+        placeholder={t('profile.address')}
         placeholderTextColor={colors.gray600}
         multiline
       />
@@ -125,30 +128,34 @@ export default function AccountScreen() {
         {saving ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={styles.saveBtnText}>Save Changes</Text>
+          <Text style={styles.saveBtnText}>{t('profile.saveChanges')}</Text>
         )}
       </TouchableOpacity>
 
-      <Text style={styles.sectionTitle}>Shortcuts</Text>
+      <Text style={styles.sectionTitle}>{t('profile.shortcuts')}</Text>
       <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Orders')}>
         <Ionicons name="receipt-outline" size={22} color={colors.navy900} />
-        <Text style={styles.linkText}>My Orders</Text>
+        <Text style={styles.linkText}>{t('profile.myOrders')}</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Wishlist')}>
         <Ionicons name="heart-outline" size={22} color={colors.navy900} />
-        <Text style={styles.linkText}>My Wishlist</Text>
+        <Text style={styles.linkText}>{t('profile.myWishlist')}</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Support')}>
         <Ionicons name="headset-outline" size={22} color={colors.navy900} />
-        <Text style={styles.linkText}>Help & Support</Text>
+        <Text style={styles.linkText}>{t('profile.helpSupport')}</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
       </TouchableOpacity>
 
+      <View style={{ alignItems: 'center', marginTop: 20 }}>
+        <LanguageToggle />
+      </View>
+
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={20} color={colors.destructive} />
-        <Text style={styles.logoutText}>Log Out</Text>
+        <Text style={styles.logoutText}>{t('profile.logout')}</Text>
       </TouchableOpacity>
       <View style={{ height: 24 }} />
     </ScrollView>

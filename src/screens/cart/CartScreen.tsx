@@ -27,10 +27,12 @@ import {
 } from '../../data/order';
 import { getBusinessPhone } from '../../data/settings';
 import { displayPrice, thumbnail } from '../../types/models';
+import { useTranslation } from 'react-i18next';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function CartScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { items, loading, refresh, updateQuantity, removeItem } = useCart();
   const { userId, profile } = useAuth();
@@ -65,15 +67,15 @@ export default function CartScreen() {
   const handleCheckout = useCallback(async () => {
     if (items.length === 0) return;
     if (!contact.trim()) {
-      Alert.alert('Contact required', 'Please enter a contact number.');
+      Alert.alert(t('cart.contactRequired'), t('cart.enterContactNumber'));
       return;
     }
     if (!address.trim()) {
-      Alert.alert('Address required', 'Please enter a shipping address.');
+      Alert.alert(t('cart.addressRequired'), t('cart.enterShippingAddress'));
       return;
     }
     if ((payment === 'bKash' || payment === 'Nagad') && !txnId.trim()) {
-      Alert.alert('Transaction ID required', `Please enter your ${payment} transaction ID.`);
+      Alert.alert(t('cart.txnIdRequired'), t('cart.enterTxnId', { method: payment }));
       return;
     }
     setPlacing(true);
@@ -87,7 +89,7 @@ export default function CartScreen() {
         paymentTransactionId: payment === 'Cash on Delivery' ? null : txnId.trim(),
       });
       await refresh();
-      Alert.alert('Order placed!', `Your order ${order.order_number ?? ''} has been placed.`, [
+      Alert.alert(t('cart.orderPlaced'), t('cart.orderPlacedMsg', { orderNumber: order.order_number ?? '' }), [
         {
           text: 'View Order',
           onPress: () =>
@@ -99,7 +101,7 @@ export default function CartScreen() {
       ]);
       setTxnId('');
     } catch (e: any) {
-      Alert.alert('Checkout failed', e?.message ?? 'Could not place order');
+      Alert.alert(t('cart.checkoutFailed'), e?.message ?? t('cart.couldNotPlaceOrder'));
     } finally {
       setPlacing(false);
     }
@@ -109,9 +111,9 @@ export default function CartScreen() {
     return (
       <View style={styles.center}>
         <Ionicons name="cart-outline" size={56} color={colors.gray600} />
-        <Text style={styles.emptyTitle}>Sign in to view your cart</Text>
+        <Text style={styles.emptyTitle}>{t('cart.signInToViewCart')}</Text>
         <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.primaryBtnText}>Sign In</Text>
+          <Text style={styles.primaryBtnText}>{t('auth.signIn')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -129,12 +131,12 @@ export default function CartScreen() {
     return (
       <View style={styles.center}>
         <Ionicons name="cart-outline" size={56} color={colors.gray600} />
-        <Text style={styles.emptyTitle}>Your cart is empty</Text>
+        <Text style={styles.emptyTitle}>{t('cart.emptyCart')}</Text>
         <TouchableOpacity
           style={styles.primaryBtn}
           onPress={() => navigation.navigate('Tabs', { screen: 'Home' })}
         >
-          <Text style={styles.primaryBtnText}>Start Shopping</Text>
+          <Text style={styles.primaryBtnText}>{t('cart.startShopping')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -142,7 +144,7 @@ export default function CartScreen() {
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Your Cart</Text>
+      <Text style={styles.title}>{t('cart.yourCart')}</Text>
 
       {items.map((it) => (
         <View key={it.id} style={styles.itemCard}>
@@ -182,14 +184,14 @@ export default function CartScreen() {
       ))}
 
       {/* Delivery zone */}
-      <Text style={styles.sectionTitle}>Delivery Zone</Text>
+      <Text style={styles.sectionTitle}>{t('cart.deliveryZone')}</Text>
       <View style={styles.segment}>
         <TouchableOpacity
           style={[styles.segmentBtn, insideDhaka && styles.segmentActive]}
           onPress={() => setInsideDhaka(true)}
         >
           <Text style={[styles.segmentText, insideDhaka && styles.segmentTextActive]}>
-            Inside Dhaka ({formatCurrency(SHIPPING_INSIDE_DHAKA)})
+            {t('cart.insideDhaka')} ({formatCurrency(SHIPPING_INSIDE_DHAKA)})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -197,13 +199,13 @@ export default function CartScreen() {
           onPress={() => setInsideDhaka(false)}
         >
           <Text style={[styles.segmentText, !insideDhaka && styles.segmentTextActive]}>
-            Outside Dhaka ({formatCurrency(SHIPPING_OUTSIDE_DHAKA)})
+            {t('cart.outsideDhaka')} ({formatCurrency(SHIPPING_OUTSIDE_DHAKA)})
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Payment method */}
-      <Text style={styles.sectionTitle}>Payment Method</Text>
+      <Text style={styles.sectionTitle}>{t('cart.paymentMethod')}</Text>
       {PAYMENT_METHODS.map((m) => (
         <TouchableOpacity key={m} style={styles.radioRow} onPress={() => setPayment(m)}>
           <Ionicons
@@ -219,17 +221,16 @@ export default function CartScreen() {
         <View style={styles.payBox}>
           {businessPhone ? (
             <Text style={styles.payHint}>
-              Send money to {payment}: <Text style={styles.payPhone}>{businessPhone}</Text>, then
-              enter the Transaction ID below.
+              {t('cart.sendMoneyTo', { method: payment })} <Text style={styles.payPhone}>{businessPhone}</Text>{t('cart.thenEnterTxnId')}
             </Text>
           ) : (
             <Text style={styles.payHint}>
-              Complete your {payment} payment, then enter the Transaction ID below.
+              {t('cart.sendMoneyTo', { method: payment })}{t('cart.thenEnterTxnId')}
             </Text>
           )}
           <TextInput
             style={styles.input}
-            placeholder="Transaction ID"
+            placeholder={t('cart.transactionId')}
             placeholderTextColor={colors.gray600}
             value={txnId}
             onChangeText={setTxnId}
@@ -238,7 +239,7 @@ export default function CartScreen() {
       )}
 
       {/* Contact + address */}
-      <Text style={styles.sectionTitle}>Contact Number</Text>
+      <Text style={styles.sectionTitle}>{t('cart.contactNumber')}</Text>
       <TextInput
         style={styles.input}
         placeholder="01712345678"
@@ -247,10 +248,10 @@ export default function CartScreen() {
         value={contact}
         onChangeText={setContact}
       />
-      <Text style={styles.sectionTitle}>Shipping Address</Text>
+      <Text style={styles.sectionTitle}>{t('cart.shippingAddress')}</Text>
       <TextInput
         style={[styles.input, styles.multiline]}
-        placeholder="House, road, area, city"
+        placeholder={t('cart.shippingAddress')}
         placeholderTextColor={colors.gray600}
         value={address}
         onChangeText={setAddress}
@@ -260,15 +261,15 @@ export default function CartScreen() {
       {/* Totals */}
       <View style={styles.totals}>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Subtotal</Text>
+          <Text style={styles.totalLabel}>{t('cart.subtotal')}</Text>
           <Text style={styles.totalValue}>{formatCurrency(subtotal)}</Text>
         </View>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Shipping</Text>
+          <Text style={styles.totalLabel}>{t('cart.shipping')}</Text>
           <Text style={styles.totalValue}>{formatCurrency(shipping)}</Text>
         </View>
         <View style={[styles.totalRow, styles.grandRow]}>
-          <Text style={styles.grandLabel}>Total</Text>
+          <Text style={styles.grandLabel}>{t('cart.total')}</Text>
           <Text style={styles.grandValue}>{formatCurrency(total)}</Text>
         </View>
       </View>
@@ -277,7 +278,7 @@ export default function CartScreen() {
         {placing ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={styles.checkoutText}>Place Order</Text>
+          <Text style={styles.checkoutText}>{t('cart.placeOrder')}</Text>
         )}
       </TouchableOpacity>
       <View style={{ height: 24 }} />

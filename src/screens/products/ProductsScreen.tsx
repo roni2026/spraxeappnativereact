@@ -19,6 +19,7 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { getCategories, searchProducts } from '../../data/catalog';
 import { Category, Product } from '../../types/models';
+import { useTranslation } from 'react-i18next';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Rt = RouteProp<RootStackParamList, 'Products'>;
@@ -26,6 +27,7 @@ type Rt = RouteProp<RootStackParamList, 'Products'>;
 const PAGE_SIZE = 20;
 
 export default function ProductsScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Rt>();
   const { addToCart } = useCart();
@@ -61,7 +63,7 @@ export default function ProductsScreen() {
       setProducts(result);
       setHasMore(result.length === PAGE_SIZE);
     } catch (e: any) {
-      setError(e?.message ?? 'Failed to load products');
+      setError(e?.message ?? t('common.failedToLoadProducts'));
     } finally {
       setLoading(false);
     }
@@ -115,7 +117,7 @@ export default function ProductsScreen() {
         <Ionicons name="search" size={18} color={colors.gray600} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search products"
+          placeholder={t('common.searchProducts')}
           placeholderTextColor={colors.gray600}
           value={query}
           onChangeText={setQuery}
@@ -138,7 +140,7 @@ export default function ProductsScreen() {
           style={[styles.chip, !selectedCategory && styles.chipActive]}
           onPress={() => setSelectedCategory(null)}
         >
-          <Text style={[styles.chipText, !selectedCategory && styles.chipTextActive]}>All</Text>
+          <Text style={[styles.chipText, !selectedCategory && styles.chipTextActive]}>{t('common.all')}</Text>
         </TouchableOpacity>
         {categories.map((c) => {
           const active = selectedCategory === c.id;
@@ -162,13 +164,13 @@ export default function ProductsScreen() {
         <View style={styles.center}>
           <Text style={styles.error}>{error}</Text>
           <TouchableOpacity onPress={runSearch}>
-            <Text style={styles.retry}>Retry</Text>
+            <Text style={styles.retry}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       ) : products.length === 0 ? (
         <View style={styles.center}>
           <Ionicons name="cube-outline" size={48} color={colors.gray600} />
-          <Text style={styles.empty}>No products found</Text>
+          <Text style={styles.empty}>{t('common.noProductsFound')}</Text>
         </View>
       ) : (
         <FlatList

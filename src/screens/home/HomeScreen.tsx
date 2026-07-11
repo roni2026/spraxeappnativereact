@@ -27,6 +27,8 @@ import {
   getFeaturedProducts,
 } from '../../data/catalog';
 import { Category, FeatureCard, FeaturedImage, Product } from '../../types/models';
+import { useTranslation } from 'react-i18next';
+import LanguageToggle from '../../components/LanguageToggle';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 const { width } = Dimensions.get('window');
@@ -56,6 +58,7 @@ const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
 };
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { addToCart } = useCart();
   const { userId } = useAuth();
@@ -103,7 +106,7 @@ export default function HomeScreen() {
       setFeatured(fp);
       setCards(fc);
     } catch (e: any) {
-      setError(e?.message ?? 'Failed to load');
+      setError(e?.message ?? t('home.failedToLoad'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -166,9 +169,12 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.brand}>Spraxe</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Products')}>
-          <Ionicons name="search" size={24} color={colors.navy900} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <LanguageToggle />
+          <TouchableOpacity onPress={() => navigation.navigate('Products')}>
+            <Ionicons name="search" size={24} color={colors.navy900} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {error && <Text style={styles.error}>{error}</Text>}
@@ -215,9 +221,9 @@ export default function HomeScreen() {
       {categories.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHead}>
-            <Text style={styles.sectionTitle}>Shop by Category</Text>
+            <Text style={styles.sectionTitle}>{t('home.shopByCategory')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Tabs', { screen: 'Categories' })}>
-              <Text style={styles.seeAll}>See all</Text>
+              <Text style={styles.seeAll}>{t('home.seeAll')}</Text>
             </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail}>
@@ -247,7 +253,7 @@ export default function HomeScreen() {
       {/* Best Sellers */}
       {bestSellers.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Best Sellers</Text>
+          <Text style={styles.sectionTitle}>{t('home.bestSellers')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail}>
             {bestSellers.map((p) => (
               <View key={p.id} style={styles.railCard}>
@@ -261,7 +267,7 @@ export default function HomeScreen() {
       {/* Featured Products - FlatList with numColumns=2 */}
       {featured.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Featured Products</Text>
+          <Text style={styles.sectionTitle}>{t('home.featuredProducts')}</Text>
           <FlatList
             data={featured}
             numColumns={2}
@@ -282,7 +288,7 @@ export default function HomeScreen() {
       {/* Why Shop With Spraxe */}
       {cards.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Why Shop With Spraxe</Text>
+          <Text style={styles.sectionTitle}>{t('home.whyShopWithSpraxe')}</Text>
           <View style={styles.featureGrid}>
             {cards.map((c) => (
               <View key={c.id} style={styles.featureCard}>

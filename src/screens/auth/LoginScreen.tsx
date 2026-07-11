@@ -16,11 +16,13 @@ import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { GOOGLE_WEB_CLIENT_ID } from '../../lib/supabase';
 import { sendPhoneOtp, signInWithEmail, verifyPhoneOtp } from '../../data/auth';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 type Mode = 'phone' | 'email';
 
 export default function LoginScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('phone');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export default function LoginScreen({ navigation }: Props) {
 
   const handleSendOtp = async () => {
     if (!phone.trim()) {
-      setError('Enter your phone number');
+      setError(t('auth.enterPhone'));
       return;
     }
     setLoading(true);
@@ -47,7 +49,7 @@ export default function LoginScreen({ navigation }: Props) {
       await sendPhoneOtp(phone.trim());
       setOtpSent(true);
     } catch (e: any) {
-      setError(e?.message ?? 'Failed to send OTP');
+      setError(e?.message ?? t('auth.failedToSendOtp'));
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ export default function LoginScreen({ navigation }: Props) {
 
   const handleVerifyOtp = async () => {
     if (code.trim().length < 4) {
-      setError('Enter the 6-digit code');
+      setError(t('auth.enterCode'));
       return;
     }
     setLoading(true);
@@ -64,7 +66,7 @@ export default function LoginScreen({ navigation }: Props) {
       await verifyPhoneOtp(phone.trim(), code.trim());
       goToApp();
     } catch (e: any) {
-      setError(e?.message ?? 'Invalid code');
+      setError(e?.message ?? t('auth.invalidCode'));
     } finally {
       setLoading(false);
     }
@@ -72,7 +74,7 @@ export default function LoginScreen({ navigation }: Props) {
 
   const handleEmailLogin = async () => {
     if (!email.trim() || !password) {
-      setError('Enter your email and password');
+      setError(t('auth.enterEmailPassword'));
       return;
     }
     setLoading(true);
@@ -81,7 +83,7 @@ export default function LoginScreen({ navigation }: Props) {
       await signInWithEmail(email.trim(), password);
       goToApp();
     } catch (e: any) {
-      setError(e?.message ?? 'Sign in failed');
+      setError(e?.message ?? t('auth.signInFailed'));
     } finally {
       setLoading(false);
     }
@@ -94,8 +96,8 @@ export default function LoginScreen({ navigation }: Props) {
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Ionicons name="storefront" size={56} color={colors.navy900} />
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to your account to continue shopping</Text>
+        <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+        <Text style={styles.subtitle}>{t('auth.welcomeBackSubtitle')}</Text>
 
         <View style={styles.tabs}>
           {(['phone', 'email'] as Mode[]).map((m) => (
@@ -108,7 +110,7 @@ export default function LoginScreen({ navigation }: Props) {
               }}
             >
               <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>
-                {m === 'phone' ? 'Phone' : 'Email'}
+                {m === 'phone' ? t('auth.phone') : t('auth.email')}
               </Text>
             </TouchableOpacity>
           ))}
@@ -118,7 +120,7 @@ export default function LoginScreen({ navigation }: Props) {
 
         {mode === 'phone' ? (
           <View style={styles.form}>
-            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.label}>{t('auth.phoneNumber')}</Text>
             <TextInput
               style={styles.input}
               placeholder="01712345678"
@@ -130,10 +132,10 @@ export default function LoginScreen({ navigation }: Props) {
             />
             {otpSent && (
               <>
-                <Text style={styles.label}>Verification Code</Text>
+                <Text style={styles.label}>{t('auth.verificationCode')}</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="6-digit code"
+                  placeholder={t('auth.enterCode')}
                   placeholderTextColor={colors.gray600}
                   keyboardType="number-pad"
                   value={code}
@@ -149,18 +151,18 @@ export default function LoginScreen({ navigation }: Props) {
               {loading ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={styles.primaryBtnText}>{otpSent ? 'Verify & Sign In' : 'Send OTP'}</Text>
+                <Text style={styles.primaryBtnText}>{otpSent ? t('auth.verifyAndSignIn') : t('auth.sendOtp')}</Text>
               )}
             </TouchableOpacity>
             {otpSent && (
               <TouchableOpacity onPress={() => setOtpSent(false)}>
-                <Text style={styles.link}>Change number</Text>
+                <Text style={styles.link}>{t('auth.changeNumber')}</Text>
               </TouchableOpacity>
             )}
           </View>
         ) : (
           <View style={styles.form}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t('auth.email')}</Text>
             <TextInput
               style={styles.input}
               placeholder="you@example.com"
@@ -170,7 +172,7 @@ export default function LoginScreen({ navigation }: Props) {
               value={email}
               onChangeText={setEmail}
             />
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>{t('auth.password')}</Text>
             <TextInput
               style={styles.input}
               placeholder="••••••••"
@@ -183,7 +185,7 @@ export default function LoginScreen({ navigation }: Props) {
               {loading ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={styles.primaryBtnText}>Sign In</Text>
+                <Text style={styles.primaryBtnText}>{t('auth.signIn')}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -192,14 +194,14 @@ export default function LoginScreen({ navigation }: Props) {
         {GOOGLE_WEB_CLIENT_ID.length > 0 && (
           <TouchableOpacity style={styles.googleBtn} disabled={loading}>
             <Ionicons name="logo-google" size={18} color={colors.gray900} />
-            <Text style={styles.googleBtnText}>Continue with Google</Text>
+            <Text style={styles.googleBtnText}>{t('auth.continueWithGoogle')}</Text>
           </TouchableOpacity>
         )}
 
         <View style={styles.registerRow}>
-          <Text style={styles.muted}>Don't have an account? </Text>
+          <Text style={styles.muted}>{t('auth.dontHaveAccount')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.link}>Register</Text>
+            <Text style={styles.link}>{t('auth.register')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
