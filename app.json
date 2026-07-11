@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#1E3A8A"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.spraxe.app"
@@ -33,7 +35,24 @@
         {
           "color": "#1E3A8A"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradleWrapperVersion": "8.6",
+            "kotlinVersion": "1.9.24"
+          },
+          "ios": {
+            "newArchEnabled": false
+          }
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
   }
 }
