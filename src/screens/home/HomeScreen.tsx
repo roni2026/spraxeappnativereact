@@ -11,7 +11,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
@@ -31,6 +31,17 @@ import { Category, FeatureCard, FeaturedImage, Product } from '../../types/model
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 const { width } = Dimensions.get('window');
 const BANNER_W = width - 32;
+
+// Module-level cache so re-focusing the Home tab doesn't re-fetch every time.
+interface HomeCacheData {
+  banners: FeaturedImage[];
+  categories: Category[];
+  bestSellers: Product[];
+  featured: Product[];
+  cards: FeatureCard[];
+}
+let homeCache: { data: HomeCacheData; timestamp: number } | null = null;
+const CACHE_TTL = 30_000; // 30 seconds
 
 // Ionicons fallback lookup for feature card icons coming from the backend.
 const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -60,7 +71,19 @@ export default function HomeScreen() {
   const [bannerIndex, setBannerIndex] = useState(0);
   const bannerRef = useRef<FlatList<FeaturedImage>>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (force = false) => {
+    // Use cache if fresh and not forcing a refresh
+    if (!force && homeCache && Date.now() - homeCache.timestamp < CACHE_TTL) {
+      setBanners(homeCache.data.banners);
+      setCategories(homeCache.data.categories);
+      setBestSellers(homeCache.data.bestSellers);
+      setFeatured(homeCache.data.featured);
+      setCards(homeCache.data.cards);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     setError(null);
     try {
       const [fi, cats, bs, fp, fc] = await Promise.all([
@@ -70,6 +93,10 @@ export default function HomeScreen() {
         getFeaturedProducts(),
         getFeatureCards(),
       ]);
+      const data: HomeCacheData = {
+        banners: fi, categories: cats, bestSellers: bs, featured: fp, cards: fc,
+      };
+      homeCache = { data, timestamp: Date.now() };
       setBanners(fi);
       setCategories(cats);
       setBestSellers(bs);
@@ -83,9 +110,17 @@ export default function HomeScreen() {
     }
   }, []);
 
+  // Load on first mount
   useEffect(() => {
     load();
   }, [load]);
+
+  // Re-validate cache on screen focus (uses cache if fresh, avoids re-fetch)
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   // auto-advance the banner carousel
   useEffect(() => {
@@ -127,7 +162,7 @@ export default function HomeScreen() {
     <ScrollView
       style={styles.flex}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(true); }} />}
     >
       <View style={styles.header}>
         <Text style={styles.brand}>Spraxe</Text>
@@ -223,17 +258,24 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Featured Products */}
+      {/* Featured Products - FlatList with numColumns=2 */}
       {featured.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Featured Products</Text>
-          <View style={styles.grid}>
-            {featured.map((p) => (
-              <View key={p.id} style={styles.gridCell}>
-                <ProductCard product={p} onPress={openProduct} onAddToCart={handleAdd} />
+          <FlatList
+            data={featured}
+            numColumns={2}
+            scrollEnabled={false}
+            keyExtractor={(p) => p.id}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={styles.grid}
+            removeClippedSubviews
+            renderItem={({ item }) => (
+              <View style={styles.gridCell}>
+                <ProductCard product={item} onPress={openProduct} onAddToCart={handleAdd} />
               </View>
-            ))}
-          </View>
+            )}
+          />
         </View>
       )}
 
@@ -291,7 +333,8 @@ const styles = StyleSheet.create({
   categoryChip: { alignItems: 'center', width: 72 },
   categoryImg: { width: 56, height: 56, backgroundColor: colors.gray100 },
   categoryName: { fontSize: 12, color: colors.gray900, marginTop: 6, textAlign: 'center' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  grid: { paddingBottom: 4 },
+  row: { justifyContent: 'space-between' },
   gridCell: { width: '48%', marginBottom: 12 },
   featureGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   featureCard: {

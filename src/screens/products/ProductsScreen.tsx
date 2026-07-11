@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,8 @@ import { Category, Product } from '../../types/models';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Rt = RouteProp<RootStackParamList, 'Products'>;
 
+const PAGE_SIZE = 20;
+
 export default function ProductsScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Rt>();
@@ -36,7 +38,11 @@ export default function ProductsScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(0);
 
   useEffect(() => {
     getCategories()
@@ -47,8 +53,13 @@ export default function ProductsScreen() {
   const runSearch = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setPage(0);
+    pageRef.current = 0;
+    setHasMore(true);
     try {
-      setProducts(await searchProducts(query, selectedCategory));
+      const result = await searchProducts(query, selectedCategory, 0, PAGE_SIZE);
+      setProducts(result);
+      setHasMore(result.length === PAGE_SIZE);
     } catch (e: any) {
       setError(e?.message ?? 'Failed to load products');
     } finally {
@@ -61,6 +72,27 @@ export default function ProductsScreen() {
     const t = setTimeout(runSearch, 300);
     return () => clearTimeout(t);
   }, [runSearch]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || loading) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = pageRef.current + 1;
+      const result = await searchProducts(query, selectedCategory, nextPage, PAGE_SIZE);
+      if (result.length > 0) {
+        setProducts((prev) => [...prev, ...result]);
+        setPage(nextPage);
+        pageRef.current = nextPage;
+        setHasMore(result.length === PAGE_SIZE);
+      } else {
+        setHasMore(false);
+      }
+    } catch {
+      /* ignore pagination errors */
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [query, selectedCategory, loadingMore, hasMore, loading]);
 
   const handleAdd = async (p: Product) => {
     if (!userId) {
@@ -145,6 +177,18 @@ export default function ProductsScreen() {
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.list}
+          removeClippedSubviews
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={styles.footer}>
+                <ActivityIndicator color={colors.navy900} size="small" />
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <View style={styles.cell}>
               <ProductCard product={item} onPress={openProduct} onAddToCart={handleAdd} />
@@ -191,4 +235,5 @@ const styles = StyleSheet.create({
   list: { padding: 16, paddingTop: 12 },
   row: { justifyContent: 'space-between' },
   cell: { width: '48%', marginBottom: 12 },
+  footer: { paddingVertical: 16, alignItems: 'center' },
 });

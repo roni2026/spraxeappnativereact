@@ -38,7 +38,9 @@ export default function FallbackImage({
       source={{ uri }}
       style={[{ borderRadius }, style] as StyleProp<ImageStyle>}
       contentFit={contentFit}
-      transition={150}
+      cachePolicy="memory-disk"
+      recyclingKey={uri}
+      transition={200}
       onError={() => setFailed(true)}
     />
   );
