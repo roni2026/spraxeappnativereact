@@ -9,6 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -95,7 +96,11 @@ export default function LoginScreen({ navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Ionicons name="storefront" size={56} color={colors.navy900} />
+        <Image
+          source={require('../../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
         <Text style={styles.subtitle}>{t('auth.welcomeBackSubtitle')}</Text>
 
@@ -212,6 +217,7 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   container: { padding: 24, paddingTop: 56, alignItems: 'center' },
+  logo: { width: 88, height: 88 },
   title: { fontSize: 26, fontWeight: '800', color: colors.navy900, marginTop: 8 },
   subtitle: { fontSize: 14, color: colors.textMuted, marginTop: 4, textAlign: 'center' },
   tabs: {

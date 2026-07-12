@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { colors } from '../theme/colors';
@@ -32,7 +31,11 @@ export default function SplashScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Ionicons name="storefront" size={72} color={colors.navy900} />
+      <Image
+        source={require('../../assets/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
       <Text style={styles.title}>Spraxe</Text>
       <ActivityIndicator style={styles.spinner} color={colors.navy900} />
     </View>
@@ -46,6 +49,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.background,
   },
+  logo: { width: 120, height: 120 },
   title: { fontSize: 32, fontWeight: '800', color: colors.navy900, marginTop: 16 },
   spinner: { marginTop: 24 },
 });

@@ -32,16 +32,33 @@ Prices are shown in Bangladeshi Taka (৳). Bottom tabs: Home, Categories, Cart 
    npm install
    ```
 
-2. Copy `.env.example` to `.env` and set your Supabase anon key:
+2. Copy `.env.example` to `.env` and set your Supabase **anon** key:
 
    ```bash
    cp .env.example .env
    # then edit .env and set EXPO_PUBLIC_SUPABASE_ANON_KEY
    ```
 
+   `.env` example:
+
+   ```
+   EXPO_PUBLIC_SUPABASE_URL=https://kybgrsqqvejbvjediowo.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=<your anon public key>
+   ```
+
    - `EXPO_PUBLIC_SUPABASE_URL` defaults to the Spraxe project if unset.
-   - `EXPO_PUBLIC_SUPABASE_ANON_KEY` is **required** — no key ships in source.
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY` is **required** for auth/data to work.
+     Use the **`anon` `public`** key from Supabase → **Project Settings → API →
+     Project API keys**. Its JWT has `"role": "anon"`.
    - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` is optional (Google button hidden unless set).
+
+   > ⚠️ **Never use the `service_role` key here.** It bypasses Row Level Security
+   > and grants full admin access to the whole database. Because `EXPO_PUBLIC_*`
+   > values are baked into the app bundle, a `service_role` key in a build can be
+   > extracted from the APK/IPA by anyone — a full data breach. Only the `anon`
+   > key is safe to embed in a client app.
+
+   `.env` is gitignored, so the key stays on your machine and never lands in the repo.
 
 3. Start the app:
 
@@ -50,6 +67,37 @@ Prices are shown in Bangladeshi Taka (৳). Bottom tabs: Home, Categories, Cart 
    ```
 
    Then open it in Expo Go (Android/iOS) or a simulator/emulator.
+
+## Building a standalone APK / IPA
+
+`EXPO_PUBLIC_*` variables are inlined **at build time**, so the anon key must be
+available to the build — otherwise the built app has no key.
+
+> **Why this matters (fixed):** with an empty anon key, `supabase-js` throws
+> `supabaseKey is required.` the moment the client module is imported, which
+> previously crashed the app on launch (it would open and immediately close).
+> The client now initialises safely even without a key (see `src/lib/supabase.ts`)
+> and a top-level `ErrorBoundary` catches any other startup error, so the app
+> always opens — but you still need a valid **anon** key for data/login to work.
+
+- **Local build** — a root `.env` (see above) is read automatically:
+
+  ```bash
+  npx expo run:android           # dev/native build on a connected device/emulator
+  # or a standalone APK:
+  eas build --profile preview --local
+  ```
+
+- **EAS cloud build** — `.env` is gitignored and not uploaded, so provide the key
+  either as an EAS secret (recommended) or in the build profile's `env` block:
+
+  ```bash
+  eas secret:create --scope project \
+    --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <your anon public key>
+  ```
+
+  EAS injects project secrets into every build automatically. Do **not** commit
+  the key into `eas.json` if this repository is public.
 
 ## Caveats (mirrors the original app)
 
