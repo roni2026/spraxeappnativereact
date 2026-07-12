@@ -2,9 +2,10 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 
 export type TabParamList = {
   Home: undefined;
+  Saved: undefined;
   Categories: { categoryId?: string; categoryName?: string } | undefined;
   Cart: undefined;
-  Account: undefined;
+  Profile: undefined;
 };
 
 export type RootStackParamList = {
