@@ -3,7 +3,27 @@ import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL =
   process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://kybgrsqqvejbvjediowo.supabase.co';
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+
+// ┌───────────────────────────────────────────────────────────────────────────┐
+// │  PASTE YOUR SUPABASE **ANON / PUBLIC** KEY BETWEEN THE QUOTES BELOW.        │
+// │                                                                            │
+// │  Where to get it:                                                          │
+// │    Supabase Dashboard → your project → Project Settings → API →            │
+// │    "Project API keys" → copy the key labelled **anon / public**            │
+// │    (a long token that starts with "eyJ...").                               │
+// │                                                                            │
+// │  This is the PUBLIC key and is safe to ship inside the app.                │
+// │  ⚠️  Do NOT paste the "service_role" (secret) key here — that key must     │
+// │      NEVER be placed in a mobile/web client.                               │
+// │                                                                            │
+// │  (Advanced: instead of pasting here you may leave it blank and set         │
+// │   EXPO_PUBLIC_SUPABASE_ANON_KEY in a .env file / EAS build env — that       │
+// │   value takes priority when present.)                                      │
+// └───────────────────────────────────────────────────────────────────────────┘
+const FALLBACK_SUPABASE_ANON_KEY = '';
+
+const SUPABASE_ANON_KEY =
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? FALLBACK_SUPABASE_ANON_KEY;
 
 export const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 

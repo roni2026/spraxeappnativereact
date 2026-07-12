@@ -7,13 +7,15 @@ import React, {
   useCallback,
 } from 'react';
 import { Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { fetchOrCreateProfile } from '../data/auth';
 import { Profile } from '../types/models';
 
 interface AuthContextValue {
   session: Session | null;
   userId: string | null;
+  /** True when the current session is an anonymous "guest" session (no real login yet). */
+  isAnonymous: boolean;
   profile: Profile | null;
   initializing: boolean;
   refreshProfile: () => Promise<void>;
@@ -38,15 +40,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setSession(data.session);
-      setInitializing(false);
-    });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    // Silently create an anonymous "guest" session when there is no session,
+    // so the entire app (browsing, cart, checkout, orders) works WITHOUT ever
+    // showing a login screen. Guests transparently get a real Supabase user id,
+    // which the cart_items / orders tables require. Users can still choose to
+    // log in or create a real account later from the Profile tab.
+    const ensureSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+        if (data.session) {
+          setSession(data.session);
+        } else if (isSupabaseConfigured) {
+          const { data: anon } = await supabase.auth.signInAnonymously();
+          if (!mounted) return;
+          setSession(anon.session ?? null);
+        }
+      } catch {
+        /* ignore — the app still renders; network calls fail softly */
+      } finally {
+        if (mounted) setInitializing(false);
+      }
+    };
+    ensureSession();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
-      if (!newSession) setProfile(null);
+      if (!newSession) {
+        setProfile(null);
+        // When a logged-in user signs out, drop back to a guest session instead
+        // of forcing them to a login screen (login is optional in this app).
+        if (isSupabaseConfigured && event === 'SIGNED_OUT') {
+          supabase.auth.signInAnonymously().catch(() => {});
+        }
+      }
     });
 
     return () => {
@@ -65,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       session,
       userId: session?.user?.id ?? null,
+      isAnonymous: session?.user?.is_anonymous ?? false,
       profile,
       initializing,
       refreshProfile,

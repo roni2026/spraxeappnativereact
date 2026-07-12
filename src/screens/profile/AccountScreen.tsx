@@ -25,7 +25,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export default function AccountScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
-  const { userId, profile, refreshProfile } = useAuth();
+  const { userId, isAnonymous, profile, refreshProfile } = useAuth();
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -40,15 +40,41 @@ export default function AccountScreen() {
     }
   }, [profile]);
 
-  if (!userId) {
+  // Guest (anonymous) users: no forced login. Show a friendly screen where
+  // logging in / creating an account is optional, plus the usual shortcuts.
+  if (!userId || isAnonymous) {
     return (
-      <View style={styles.center}>
-        <Ionicons name="person-circle-outline" size={64} color={colors.gray600} />
-        <Text style={styles.emptyTitle}>{t('profile.signInToManage')}</Text>
-        <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.primaryBtnText}>{t('auth.signIn')}</Text>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+        <View style={styles.avatarWrap}>
+          <Ionicons name="person-circle-outline" size={72} color={colors.navy900} />
+          <Text style={styles.name}>{t('profile.yourAccount')}</Text>
+          <Text style={styles.email}>
+            You&apos;re shopping as a guest. You can browse and place orders without
+            an account — log in only if you want to sync your orders across devices.
+          </Text>
+        </View>
+
+        <TouchableOpacity style={styles.saveBtn} onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.saveBtnText}>{t('auth.signIn')}</Text>
         </TouchableOpacity>
-      </View>
+
+        <Text style={styles.sectionTitle}>{t('profile.shortcuts')}</Text>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Orders')}>
+          <Ionicons name="receipt-outline" size={22} color={colors.navy900} />
+          <Text style={styles.linkText}>{t('profile.myOrders')}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Support')}>
+          <Ionicons name="headset-outline" size={22} color={colors.navy900} />
+          <Text style={styles.linkText}>{t('profile.helpSupport')}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+        </TouchableOpacity>
+
+        <View style={{ alignItems: 'center', marginTop: 20 }}>
+          <LanguageToggle />
+        </View>
+        <View style={{ height: 24 }} />
+      </ScrollView>
     );
   }
 
@@ -82,7 +108,9 @@ export default function AccountScreen() {
           try {
             await signOut();
           } finally {
-            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+            // Login is optional — after logging out, return to the app as a
+            // guest (a new anonymous session is created automatically).
+            navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
           }
         },
       },

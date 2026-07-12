@@ -9,25 +9,24 @@ import { syncFcmToken } from '../data/auth';
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
 export default function SplashScreen({ navigation }: Props) {
-  const { session, initializing } = useAuth();
+  const { initializing } = useAuth();
 
   useEffect(() => {
     if (initializing) return;
+    // Login is optional: always go straight into the app (Home). A guest
+    // session is created automatically in AuthContext, so the cart and
+    // checkout work without the user ever seeing a login screen.
     const t = setTimeout(async () => {
-      if (session?.user) {
-        // Best-effort keep push token fresh (no-op in Expo Go).
-        try {
-          await syncFcmToken();
-        } catch {
-          /* ignore */
-        }
-        navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
-      } else {
-        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      // Best-effort keep push token fresh (no-op in Expo Go).
+      try {
+        await syncFcmToken();
+      } catch {
+        /* ignore */
       }
+      navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
     }, 400);
     return () => clearTimeout(t);
-  }, [initializing, session, navigation]);
+  }, [initializing, navigation]);
 
   return (
     <View style={styles.container}>
