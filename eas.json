@@ -5,7 +5,7 @@
   },
   "build": {
     "development": {
-      "development": true,
+      "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
       "env": {
