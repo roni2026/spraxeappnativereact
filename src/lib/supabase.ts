@@ -20,7 +20,8 @@ const SUPABASE_URL =
 // │   EXPO_PUBLIC_SUPABASE_ANON_KEY in a .env file / EAS build env — that       │
 // │   value takes priority when present.)                                      │
 // └───────────────────────────────────────────────────────────────────────────┘
-const FALLBACK_SUPABASE_ANON_KEY = '';
+const FALLBACK_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5Ymdyc3FxdmVqYnZqZWRpb3dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyOTI2NTYsImV4cCI6MjA3OTg2ODY1Nn0.S84KlGfH1zrJNASh4EJ9KqSt0Q4UCv6nyiSKVzP2sy8';
 
 const SUPABASE_ANON_KEY =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? FALLBACK_SUPABASE_ANON_KEY;
