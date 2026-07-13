@@ -14,7 +14,7 @@ export type RootStackParamList = {
   Register: undefined;
   Tabs: NavigatorScreenParams<TabParamList> | undefined;
   Products: { categoryId?: string; categoryName?: string; initialQuery?: string } | undefined;
-  ProductDetail: { slug: string; name?: string };
+  ProductDetail: { id: string; name?: string; slug?: string } | undefined;
   Orders: undefined;
   OrderDetail: { orderId: string; orderNumber?: string };
   Wishlist: undefined;
