@@ -32,7 +32,7 @@ import {
   submitReview,
   summarize,
 } from '../../data/review';
-import { Product, ProductReviewRow, displayPrice } from '../../types/models';
+import { Product, ProductReviewRow, displayPrice, displayRetail } from '../../types/models';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Rt = RouteProp<RootStackParamList, 'ProductDetail'>;
@@ -81,7 +81,7 @@ export default function ProductDetailScreen() {
     setLoading(true);
     setError(null);
     try {
-      const p = await getProductBySlug(route.params.slug);
+      const p = await getProductBySlug(route.params?.id ?? route.params?.slug ?? '');
       if (!p) {
         setError('Product not found');
         return;
@@ -101,7 +101,7 @@ export default function ProductDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [route.params.slug, userId, loadReviews, navigation]);
+  }, [route.params?.id, route.params?.slug, userId, loadReviews, navigation]);
 
   useEffect(() => {
     load();
@@ -218,7 +218,27 @@ export default function ProductDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.price}>{formatCurrency(displayPrice(product))}</Text>
+        <View style={styles.priceRow}>
+          <Text style={styles.price}>{formatCurrency(displayPrice(product))}</Text>
+          {displayRetail(product) > 0 && displayRetail(product) > displayPrice(product) && (
+            <Text style={styles.retailPrice}>{formatCurrency(displayRetail(product))}</Text>
+          )}
+        </View>
+        {product.color_name && (
+          <View style={styles.colorRow}>
+            <Text style={styles.colorLabel}>Color: </Text>
+            {product.color_hex && (
+              <View style={[styles.colorSwatch, { backgroundColor: product.color_hex }]} />
+            )}
+            <Text style={styles.colorName}>{product.color_name}</Text>
+          </View>
+        )}
+        {product.stock_quantity !== null && product.stock_quantity !== undefined && product.stock_quantity <= 5 && product.stock_quantity > 0 && (
+          <Text style={styles.lowStock}>Only {product.stock_quantity} left in stock!</Text>
+        )}
+        {product.stock_quantity !== null && product.stock_quantity !== undefined && product.stock_quantity === 0 && (
+          <Text style={styles.outOfStock}>Out of stock</Text>
+        )}
 
         {summary.count > 0 && (
           <View style={styles.ratingRow}>
@@ -338,6 +358,14 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   name: { flex: 1, fontSize: 20, fontWeight: '800', color: colors.gray900 },
   price: { fontSize: 22, fontWeight: '800', color: colors.navy900, marginTop: 8 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  retailPrice: { fontSize: 16, color: colors.textMuted, textDecorationLine: 'line-through' },
+  colorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  colorLabel: { fontSize: 14, color: colors.gray900, fontWeight: '600' },
+  colorSwatch: { width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderColor: colors.border },
+  colorName: { fontSize: 14, color: colors.gray700 },
+  lowStock: { fontSize: 13, color: colors.orange500, fontWeight: '600', marginTop: 6 },
+  outOfStock: { fontSize: 13, color: colors.destructive, fontWeight: '600', marginTop: 6 },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   ratingText: { color: colors.textMuted, fontSize: 13 },
   inStock: { color: colors.success, marginTop: 8, fontWeight: '600' },
