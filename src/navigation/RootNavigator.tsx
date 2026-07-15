@@ -12,6 +12,8 @@ import OrdersScreen from '../screens/orders/OrdersScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
 import WishlistScreen from '../screens/wishlist/WishlistScreen';
 import SupportScreen from '../screens/support/SupportScreen';
+import TrackOrderScreen from '../screens/orders/TrackOrderScreen';
+import CompareScreen from '../screens/products/CompareScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -48,6 +50,8 @@ export default function RootNavigator() {
       />
       <Stack.Screen name="Wishlist" component={WishlistScreen} options={{ title: 'My Wishlist' }} />
       <Stack.Screen name="Support" component={SupportScreen} options={{ title: 'Help & Support' }} />
+      <Stack.Screen name="TrackOrder" component={TrackOrderScreen} options={{ title: 'Track Order' }} />
+      <Stack.Screen name="Compare" component={CompareScreen} options={{ title: 'Compare' }} />
     </Stack.Navigator>
   );
 }

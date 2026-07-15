@@ -19,4 +19,6 @@ export type RootStackParamList = {
   OrderDetail: { orderId: string; orderNumber?: string };
   Wishlist: undefined;
   Support: undefined;
+  TrackOrder: undefined;
+  Compare: undefined;
 };

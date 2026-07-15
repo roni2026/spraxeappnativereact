@@ -43,6 +43,23 @@ export interface Category {
   is_active?: boolean;
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+  slug?: string | null;
+  logo_url?: string | null;
+  category_id?: string | null;
+  is_active?: boolean;
+}
+
+export interface ProductModel {
+  id: string;
+  brand_id: string;
+  name: string;
+  slug?: string | null;
+  is_active?: boolean;
+}
+
 export interface FeaturedImage {
   id: number;
   title?: string | null;

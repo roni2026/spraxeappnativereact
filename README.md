@@ -108,3 +108,11 @@ available to the build — otherwise the built app has no key.
   provider enabled in Supabase. The button is hidden until configured.
 - **bKash / Nagad payments**: Verified manually by an admin (via the Spraxe Support app)
   against the Transaction ID the customer enters — there is no payment-gateway API integration.
+
+## Recent updates (parity with spraxe web)
+
+- Cloudinary-optimized images (`EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME`)
+- Hierarchical categories + subcategories
+- Product compare (max 4)
+- Track order by order number
+- Gallery image prefetch on product detail

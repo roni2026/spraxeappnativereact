@@ -92,7 +92,7 @@ export async function getCategories(): Promise<Category[]> {
     () =>
       supabase
         .from('categories')
-        .select('id, name, slug, image_url, sort_order, is_active')
+        .select('id, name, slug, image_url, parent_id, sort_order, is_active')
         .eq('is_active', true)
         .order('sort_order', { ascending: true }),
     [] as Category[],
@@ -198,4 +198,49 @@ export async function getProductsByCategorySlug(categorySlug: string, page = 0, 
   if (catErr || !cat) return [];
 
   return searchProducts(null, cat.id, page, pageSize);
+}
+
+
+/** Top-level categories only (no parent). */
+export async function getRootCategories(): Promise<Category[]> {
+  const all = await getCategories();
+  const roots = all.filter((c) => !c.parent_id);
+  return roots.length ? roots : all;
+}
+
+/** Children of a category. */
+export async function getSubcategories(parentId: string): Promise<Category[]> {
+  const all = await getCategories();
+  return all.filter((c) => c.parent_id === parentId);
+}
+
+/** Nested tree for UI. */
+export async function getCategoryTree(): Promise<Array<Category & { children: Category[] }>> {
+  const all = await getCategories();
+  const byParent = new Map<string | null, Category[]>();
+  for (const c of all) {
+    const key = c.parent_id ?? null;
+    const list = byParent.get(key) ?? [];
+    list.push(c);
+    byParent.set(key, list);
+  }
+  const roots = byParent.get(null) ?? all.filter((c) => !c.parent_id);
+  return roots.map((r) => ({
+    ...r,
+    children: (byParent.get(r.id) ?? []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)),
+  }));
+}
+
+export async function trackOrderByNumber(orderNumber: string): Promise<any | null> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id, order_number, status, total, created_at, shipping_address, payment_method, contact_phone')
+    .eq('order_number', orderNumber.trim())
+    .maybeSingle();
+  if (error) {
+    // fallback: search by id prefix
+    const { data: d2 } = await supabase.from('orders').select('*').ilike('id', `${orderNumber}%`).limit(1).maybeSingle();
+    return d2 ?? null;
+  }
+  return data;
 }

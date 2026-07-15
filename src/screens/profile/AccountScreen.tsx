@@ -69,6 +69,16 @@ export default function AccountScreen() {
           <Text style={styles.linkText}>{t('profile.helpSupport')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
         </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('TrackOrder')}>
+          <Ionicons name="locate-outline" size={22} color={colors.navy900} />
+          <Text style={styles.linkText}>Track order</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Compare')}>
+          <Ionicons name="git-compare-outline" size={22} color={colors.navy900} />
+          <Text style={styles.linkText}>Compare</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+        </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginTop: 20 }}>
           <LanguageToggle />
@@ -174,6 +184,16 @@ export default function AccountScreen() {
       <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Support')}>
         <Ionicons name="headset-outline" size={22} color={colors.navy900} />
         <Text style={styles.linkText}>{t('profile.helpSupport')}</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('TrackOrder')}>
+        <Ionicons name="locate-outline" size={22} color={colors.navy900} />
+        <Text style={styles.linkText}>Track order</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Compare')}>
+        <Ionicons name="git-compare-outline" size={22} color={colors.navy900} />
+        <Text style={styles.linkText}>Compare</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
       </TouchableOpacity>
 

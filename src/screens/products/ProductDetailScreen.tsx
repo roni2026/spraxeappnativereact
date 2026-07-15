@@ -22,6 +22,7 @@ import FallbackImage from '../../components/FallbackImage';
 import { optimizeImageUrl } from '../../lib/cloudinary';
 import RatingStars from '../../components/RatingStars';
 import { useCart } from '../../context/CartContext';
+import { useCompare } from '../../context/CompareContext';
 import { useAuth } from '../../context/AuthContext';
 import { getProductBySlug } from '../../data/catalog';
 import { isWishlisted, toggleWishlist } from '../../data/wishlist';
@@ -44,6 +45,7 @@ export default function ProductDetailScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Rt>();
   const { addToCart } = useCart();
+  const { toggle: toggleCompare, isInCompare, maxItems, items: compareItems } = useCompare();
   const { userId } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -115,6 +117,15 @@ export default function ProductDetailScreen() {
       return false;
     }
     return true;
+  };
+
+  const handleCompare = () => {
+    if (!product) return;
+    if (!isInCompare(product?.id ?? '') && compareItems.length >= maxItems) {
+      Alert.alert('Compare limit', `You can compare up to ${maxItems} products.`);
+      return;
+    }
+    toggleCompare(product);
   };
 
   const handleAdd = async () => {
@@ -226,6 +237,13 @@ export default function ProductDetailScreen() {
               name={wished ? 'heart' : 'heart-outline'}
               size={26}
               color={wished ? colors.destructive : colors.gray600}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleCompare} hitSlop={8} style={{ marginLeft: 12 }}>
+            <Ionicons
+              name={isInCompare(product?.id ?? '') ? 'git-compare' : 'git-compare-outline'}
+              size={24}
+              color={isInCompare(product?.id ?? '') ? colors.navy900 : colors.gray600}
             />
           </TouchableOpacity>
         </View>
