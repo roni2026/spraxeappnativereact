@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, ViewStyle, ImageStyle, StyleProp } from 'react-native';
 import { Image, ImageContentFit } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import { optimizeImageUrl } from '../lib/cloudinary';
 
 interface Props {
   uri?: string | null;
@@ -11,6 +12,8 @@ interface Props {
   iconName?: keyof typeof Ionicons.glyphMap;
   iconSize?: number;
   borderRadius?: number;
+  /** Target display width in CSS pixels (Cloudinary w_ transform). */
+  widthHint?: number;
 }
 
 /** Image that shows a placeholder icon when the source is missing or fails to load. */
@@ -21,9 +24,11 @@ export default function FallbackImage({
   iconName = 'image-outline',
   iconSize = 32,
   borderRadius = 0,
+  widthHint = 600,
 }: Props) {
   const [failed, setFailed] = useState(false);
-  const showPlaceholder = !uri || failed;
+  const optimized = useMemo(() => optimizeImageUrl(uri, widthHint), [uri, widthHint]);
+  const showPlaceholder = !optimized || failed;
 
   if (showPlaceholder) {
     return (
@@ -35,12 +40,12 @@ export default function FallbackImage({
 
   return (
     <Image
-      source={{ uri }}
+      source={{ uri: optimized }}
       style={[{ borderRadius }, style] as StyleProp<ImageStyle>}
       contentFit={contentFit}
       cachePolicy="memory-disk"
-      recyclingKey={uri}
-      transition={200}
+      recyclingKey={optimized}
+      transition={120}
       onError={() => setFailed(true)}
     />
   );

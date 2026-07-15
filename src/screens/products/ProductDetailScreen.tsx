@@ -17,7 +17,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { formatCurrency } from '../../theme/theme';
+import { Image as ExpoImage } from 'expo-image';
 import FallbackImage from '../../components/FallbackImage';
+import { optimizeImageUrl } from '../../lib/cloudinary';
 import RatingStars from '../../components/RatingStars';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -183,6 +185,16 @@ export default function ProductDetailScreen() {
 
   const images = product.images && product.images.length > 0 ? product.images : [undefined];
 
+  // Prefetch every gallery frame at display width so swipes are cache hits.
+  useEffect(() => {
+    const urls = (images.filter(Boolean) as string[])
+      .map((u) => optimizeImageUrl(u, Math.round(width)))
+      .filter(Boolean) as string[];
+    urls.forEach((u) => {
+      ExpoImage.prefetch(u).catch(() => {});
+    });
+  }, [product?.id]);
+
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
       <FlatList
@@ -195,7 +207,7 @@ export default function ProductDetailScreen() {
           setActiveImg(Math.round(e.nativeEvent.contentOffset.x / width))
         }
         renderItem={({ item }) => (
-          <FallbackImage uri={item} style={{ width, height: width }} iconName="cube-outline" />
+          <FallbackImage uri={item} style={{ width, height: width }} iconName="cube-outline" widthHint={Math.round(width)} contentFit="contain" />
         )}
       />
       {images.length > 1 && (

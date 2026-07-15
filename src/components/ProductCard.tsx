@@ -39,6 +39,7 @@ export default function ProductCard({
           uri={thumbnail(product)}
           style={styles.image}
           iconName="cube-outline"
+          widthHint={400}
         />
         {hasDiscount && (
           <View style={styles.discountBadge}>
