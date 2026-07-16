@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  FlatList,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -20,36 +22,58 @@ import {
   SUPPORT_TYPES,
   SUPPORT_CONTACT,
   SupportType,
+  SupportTicketRow,
   createSupportTicket,
+  listMySupportTickets,
 } from '../../data/support';
+import { useTranslation } from 'react-i18next';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
+const STATUS_COLORS: Record<string, string> = {
+  open: colors.orange500,
+  pending: '#F59E0B',
+  resolved: colors.success,
+  closed: colors.gray600,
+};
+
 export default function SupportScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
-  const { userId, profile } = useAuth();
+  const { userId, isAnonymous, profile } = useAuth();
 
   const [type, setType] = useState<SupportType>('inquiry');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [tickets, setTickets] = useState<SupportTicketRow[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showTickets, setShowTickets] = useState(false);
 
   useEffect(() => {
     if (profile?.email) setEmail(profile.email);
   }, [profile?.email]);
 
-  if (!userId) {
-    return (
-      <View style={styles.center}>
-        <Ionicons name="chatbubbles-outline" size={64} color={colors.gray600} />
-        <Text style={styles.emptyTitle}>Sign in to contact support</Text>
-        <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.primaryBtnText}>Sign In</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const loadTickets = useCallback(async (isRefresh = false) => {
+    if (!userId || isAnonymous) return;
+    if (isRefresh) setRefreshing(true);
+    else setTicketsLoading(true);
+    try {
+      const list = await listMySupportTickets();
+      setTickets(list);
+    } catch {
+      // ignore
+    } finally {
+      setTicketsLoading(false);
+      setRefreshing(false);
+    }
+  }, [userId, isAnonymous]);
+
+  useEffect(() => {
+    loadTickets();
+  }, [loadTickets]);
 
   const handleSubmit = async () => {
     if (!email.trim()) {
@@ -70,6 +94,8 @@ export default function SupportScreen() {
       setSubject('');
       setMessage('');
       setType('inquiry');
+      // Refresh ticket list
+      loadTickets();
     } catch (e: any) {
       Alert.alert('Submission failed', e?.message ?? 'Something went wrong. Please try again.');
     } finally {
@@ -77,8 +103,39 @@ export default function SupportScreen() {
     }
   };
 
+  const renderTicket = ({ item }: { item: SupportTicketRow }) => {
+    const statusColor = STATUS_COLORS[item.status] ?? colors.gray600;
+    const dateStr = item.created_at
+      ? new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '';
+    return (
+      <View style={styles.ticketCard}>
+        <View style={styles.ticketHeader}>
+          <Text style={styles.ticketNumber}>{item.ticket_number ?? 'Ticket'}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+            <Text style={[styles.statusText, { color: statusColor }]}>{item.status}</Text>
+          </View>
+        </View>
+        <Text style={styles.ticketSubject} numberOfLines={2}>{item.subject}</Text>
+        <Text style={styles.ticketMessage} numberOfLines={2}>{item.message}</Text>
+        <View style={styles.ticketFooter}>
+          <Text style={styles.ticketType}>{item.type}</Text>
+          <Text style={styles.ticketDate}>{dateStr}</Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.flex}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        userId && !isAnonymous
+          ? <RefreshControl refreshing={refreshing} onRefresh={() => loadTickets(true)} />
+          : undefined
+      }
+    >
       <Text style={styles.title}>Support Center</Text>
       <Text style={styles.subtitle}>Need help? Our team is ready to assist you.</Text>
 
@@ -107,11 +164,55 @@ export default function SupportScreen() {
         </View>
       </View>
 
+      {/* My Tickets section (signed-in users only) */}
+      {userId && !isAnonymous && (
+        <View style={styles.ticketsSection}>
+          <TouchableOpacity
+            style={styles.ticketsToggle}
+            onPress={() => setShowTickets((v) => !v)}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name="ticket-outline" size={20} color={colors.navy900} />
+              <Text style={styles.ticketsToggleText}>My Support Tickets</Text>
+              {tickets.length > 0 && (
+                <View style={styles.ticketCountBadge}>
+                  <Text style={styles.ticketCountText}>{tickets.length}</Text>
+                </View>
+              )}
+            </View>
+            <Ionicons name={showTickets ? 'chevron-up' : 'chevron-down'} size={20} color={colors.gray600} />
+          </TouchableOpacity>
+
+          {showTickets && (
+            ticketsLoading ? (
+              <View style={styles.ticketsLoading}>
+                <ActivityIndicator color={colors.navy900} size="small" />
+              </View>
+            ) : tickets.length === 0 ? (
+              <View style={styles.ticketsEmpty}>
+                <Ionicons name="document-text-outline" size={36} color={colors.gray300} />
+                <Text style={styles.ticketsEmptyText}>No tickets yet. Submit one below!</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={tickets}
+                keyExtractor={(item) => item.id}
+                renderItem={renderTicket}
+                scrollEnabled={false}
+                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              />
+            )
+          )}
+        </View>
+      )}
+
       {/* Ticket form */}
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Submit a Support Ticket</Text>
         <Text style={styles.formHint}>
-          Please provide accurate details so we can assist you faster.
+          {userId && !isAnonymous
+            ? 'Please provide accurate details so we can assist you faster.'
+            : 'Enter your email so we can get back to you. No account needed!'}
         </Text>
 
         <Text style={styles.label}>Request Type</Text>
@@ -200,6 +301,64 @@ const styles = StyleSheet.create({
   },
   contactTitle: { fontSize: 13, fontWeight: '700', color: colors.gray900 },
   contactValue: { fontSize: 11, color: colors.textMuted, textAlign: 'center' },
+  // Tickets section
+  ticketsSection: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+  },
+  ticketsToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ticketsToggleText: { fontSize: 16, fontWeight: '700', color: colors.gray900 },
+  ticketCountBadge: {
+    backgroundColor: colors.navy900,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ticketCountText: { color: colors.white, fontSize: 11, fontWeight: '700' },
+  ticketsLoading: { paddingVertical: 20, alignItems: 'center' },
+  ticketsEmpty: { paddingVertical: 20, alignItems: 'center', gap: 8 },
+  ticketsEmptyText: { color: colors.textMuted, fontSize: 13 },
+  ticketCard: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 12,
+  },
+  ticketHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  ticketNumber: { fontSize: 13, fontWeight: '700', color: colors.navy900 },
+  statusBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  statusText: { fontSize: 11, fontWeight: '700', textTransform: 'capitalize' },
+  ticketSubject: { fontSize: 14, fontWeight: '600', color: colors.gray900, marginBottom: 4 },
+  ticketMessage: { fontSize: 12, color: colors.textMuted, marginBottom: 8 },
+  ticketFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  ticketType: { fontSize: 11, color: colors.gray600, textTransform: 'capitalize' },
+  ticketDate: { fontSize: 11, color: colors.gray600 },
+  // Form
   formCard: {
     backgroundColor: colors.surface,
     borderWidth: 1,

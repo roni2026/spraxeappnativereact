@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, ViewStyle, ImageStyle, StyleProp } from 'react-native';
 import { Image, ImageContentFit } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,18 @@ export default function FallbackImage({
   const optimized = useMemo(() => optimizeImageUrl(uri, widthHint), [uri, widthHint]);
   const showPlaceholder = !optimized || failed;
 
+  // Reset failed state when URI changes
+  useEffect(() => {
+    setFailed(false);
+  }, [optimized]);
+
+  // Prefetch the optimized URL for smoother scrolling
+  useEffect(() => {
+    if (optimized) {
+      Image.prefetch(optimized).catch(() => {});
+    }
+  }, [optimized]);
+
   if (showPlaceholder) {
     return (
       <View style={[styles.placeholder, { borderRadius }, style]}>
@@ -45,7 +57,8 @@ export default function FallbackImage({
       contentFit={contentFit}
       cachePolicy="memory-disk"
       recyclingKey={optimized}
-      transition={120}
+      transition={80}
+      placeholder={undefined}
       onError={() => setFailed(true)}
     />
   );

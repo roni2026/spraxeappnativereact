@@ -23,7 +23,10 @@ export function optimizeImageUrl(
   if (!originalUrl) return undefined;
   if (!CLOUD_NAME) return originalUrl;
 
-  const transforms = ['f_auto', 'q_auto', 'c_limit', `w_${Math.round(width)}`];
+  // Clamp width to reasonable bounds for mobile
+  const w = Math.round(Math.min(Math.max(width, 80), 1200));
+
+  const transforms = ['f_auto', 'q_auto:best', 'c_limit', `w_${w}`];
   const t = transforms.join(',');
 
   if (isCloudinaryUploadUrl(originalUrl)) {
@@ -31,7 +34,7 @@ export function optimizeImageUrl(
       // Already transformed — ensure width is present.
       if (!/\/w_\d+/.test(originalUrl)) {
         return originalUrl.replace(/\/image\/upload\/([^/]+)\//, (_m, existing) => {
-          return `/image/upload/${existing},w_${Math.round(width)}/`;
+          return `/image/upload/${existing},w_${w}/`;
         });
       }
       return originalUrl;
@@ -45,4 +48,23 @@ export function optimizeImageUrl(
   }
 
   return originalUrl;
+}
+
+/**
+ * Batch-prefetch multiple image URLs into the expo-image cache.
+ * Call this when a screen mounts to warm the cache before images scroll into view.
+ */
+export function prefetchImages(urls: (string | undefined | null)[], width = 400): void {
+  // Lazy import to avoid circular deps in some bundler configs
+  import('expo-image')
+    .then(({ Image: ExpoImage }) => {
+      const optimized = urls
+        .filter(Boolean)
+        .map((u) => optimizeImageUrl(u, width))
+        .filter(Boolean) as string[];
+      optimized.forEach((u) => {
+        ExpoImage.prefetch(u).catch(() => {});
+      });
+    })
+    .catch(() => {});
 }

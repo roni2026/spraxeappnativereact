@@ -28,6 +28,7 @@ import {
   getFeaturedProducts,
   getNewArrivals,
 } from '../../data/catalog';
+import { prefetchImages } from '../../lib/cloudinary';
 import { FeatureCard, FeaturedImage, Product } from '../../types/models';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../../components/LanguageToggle';
@@ -124,6 +125,13 @@ export default function HomeScreen() {
       setFeatured(featuredProds);
       setNewArrivals(newProds);
       setCards(featureCards);
+
+      // Prefetch product images for smoother scrolling
+      const allProducts = [...featuredProds, ...bestProds, ...newProds];
+      const thumbs = allProducts
+        .map((p) => (p.images && p.images.length > 0 ? p.images[0] : null))
+        .filter(Boolean) as string[];
+      prefetchImages(thumbs, 400);
     } catch (e: any) {
       console.warn('[home] load error:', e?.message);
     } finally {

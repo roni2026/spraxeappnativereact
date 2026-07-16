@@ -20,6 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getCategories, searchProducts } from '../../data/catalog';
 import { Category, Product } from '../../types/models';
 import { useTranslation } from 'react-i18next';
+import { prefetchImages } from '../../lib/cloudinary';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Rt = RouteProp<RootStackParamList, 'Products'>;
@@ -77,6 +78,12 @@ export default function ProductsScreen() {
       allProductsRef.current = result;
       setProducts(result);
       setHasMore(result.length === PAGE_SIZE);
+
+      // Prefetch product thumbnails for smoother scrolling
+      const thumbs = result
+        .map((p) => (p.images && p.images.length > 0 ? p.images[0] : null))
+        .filter(Boolean) as string[];
+      prefetchImages(thumbs, 400);
     } catch (e: any) {
       setError(e?.message ?? t('common.failedToLoadProducts'));
     } finally {

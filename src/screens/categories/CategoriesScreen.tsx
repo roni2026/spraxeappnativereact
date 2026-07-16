@@ -17,6 +17,7 @@ import { colors } from '../../theme/colors';
 import FallbackImage from '../../components/FallbackImage';
 import { getCategoryTree } from '../../data/catalog';
 import { Category } from '../../types/models';
+import { prefetchImages } from '../../lib/cloudinary';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Node = Category & { children: Category[] };
@@ -109,7 +110,13 @@ export default function CategoriesScreen() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      setTree(await getCategoryTree());
+      const tree = await getCategoryTree();
+      setTree(tree);
+      // Prefetch category images
+      const imgs = tree
+        .flatMap((t) => [t.image_url, ...(t.children?.map((c) => c.image_url) ?? [])])
+        .filter(Boolean) as string[];
+      prefetchImages(imgs, 120);
     } catch (e: any) {
       setError(e?.message ?? 'Failed to load categories');
     } finally {

@@ -125,6 +125,7 @@ export default function WishlistScreen() {
               style={styles.img}
               borderRadius={10}
               iconName="cube-outline"
+              widthHint={200}
             />
             <View style={styles.body}>
               <Text numberOfLines={2} style={styles.name}>

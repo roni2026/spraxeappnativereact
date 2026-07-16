@@ -153,6 +153,7 @@ export default function CartScreen() {
             style={styles.itemImg}
             borderRadius={10}
             iconName="cube-outline"
+            widthHint={200}
           />
           <View style={styles.itemBody}>
             <Text numberOfLines={2} style={styles.itemName}>

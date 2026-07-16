@@ -69,6 +69,11 @@ export default function AccountScreen() {
           <Text style={styles.linkText}>{t('profile.helpSupport')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
         </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Support')}>
+          <Ionicons name="create-outline" size={22} color={colors.navy900} />
+          <Text style={styles.linkText}>Create Support Ticket</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Wishlist')}>
           <Ionicons name="heart-outline" size={22} color={colors.navy900} />
           <Text style={styles.linkText}>{t('profile.myWishlist')}</Text>
@@ -189,6 +194,11 @@ export default function AccountScreen() {
       <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Support')}>
         <Ionicons name="headset-outline" size={22} color={colors.navy900} />
         <Text style={styles.linkText}>{t('profile.helpSupport')}</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Support')}>
+        <Ionicons name="create-outline" size={22} color={colors.navy900} />
+        <Text style={styles.linkText}>Create Support Ticket</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('TrackOrder')}>
