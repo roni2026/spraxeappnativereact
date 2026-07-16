@@ -85,7 +85,7 @@ export default function ProductDetailScreen() {
     setLoading(true);
     setError(null);
     try {
-      const p = await getProductBySlug(route.params?.id ?? route.params?.slug ?? '');
+      const p = await getProductBySlug(route.params?.slug ?? route.params?.id ?? '');
       if (!p) {
         setError('Product not found');
         return;
@@ -105,7 +105,7 @@ export default function ProductDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [route.params?.id, route.params?.slug, userId, loadReviews, navigation]);
+  }, [route.params?.slug, route.params?.id, userId, loadReviews, navigation]);
 
   useEffect(() => {
     load();

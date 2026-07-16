@@ -21,6 +21,83 @@ import { Category } from '../../types/models';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Node = Category & { children: Category[] };
 
+// Fancy icon mapping for categories that may be missing logos.
+// Maps category name keywords to appropriate Ionicons icons with gradient-like colors.
+const CATEGORY_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
+  // Fashion
+  fashion: { icon: 'shirt-outline', color: '#EC4899' },
+  women: { icon: 'woman-outline', color: '#F472B6' },
+  man: { icon: 'man-outline', color: '#3B82F6' },
+  // Electronics
+  laptop: { icon: 'laptop-outline', color: '#6366F1' },
+  computer: { icon: 'desktop-outline', color: '#6366F1' },
+  gadget: { icon: 'hardware-chip-outline', color: '#8B5CF6' },
+  headphone: { icon: 'headset-outline', color: '#A855F7' },
+  earbud: { icon: 'earbuds-outline', color: '#A855F7' },
+  speaker: { icon: 'volume-high-outline', color: '#A855F7' },
+  watch: { icon: 'watch-outline', color: '#0EA5E9' },
+  camera: { icon: 'camera-outline', color: '#14B8A6' },
+  cctv: { icon: 'videocam-outline', color: '#14B8A6' },
+  // Home
+  appliance: { icon: 'home-outline', color: '#F59E0B' },
+  electronic: { icon: 'hardware-chip-outline', color: '#8B5CF6' },
+  decor: { icon: 'color-palette-outline', color: '#EC4899' },
+  textile: { icon: 'grid-outline', color: '#F97316' },
+  // Mobile
+  phone: { icon: 'phone-portrait-outline', color: '#3B82F6' },
+  mobile: { icon: 'phone-portrait-outline', color: '#3B82F6' },
+  iphone: { icon: 'logo-apple', color: '#6B7280' },
+  tablet: { icon: 'tablet-portrait-outline', color: '#6366F1' },
+  // Accessories
+  charger: { icon: 'flash-outline', color: '#F59E0B' },
+  cable: { icon: 'git-branch-outline', color: '#6B7280' },
+  adapter: { icon: 'hardware-chip-outline', color: '#8B5CF6' },
+  hub: { icon: 'server-outline', color: '#6366F1' },
+  dock: { icon: 'business-outline', color: '#6366F1' },
+  case: { icon: 'cube-outline', color: '#A855F7' },
+  cover: { icon: 'cube-outline', color: '#A855F7' },
+  screen: { icon: 'phone-portrait-outline', color: '#0EA5E9' },
+  protector: { icon: 'shield-outline', color: '#0EA5E9' },
+  power: { icon: 'battery-charging-outline', color: '#10B981' },
+  bank: { icon: 'battery-charging-outline', color: '#10B981' },
+  // Default
+  default: { icon: 'grid-outline', color: '#6366F1' },
+};
+
+function getCategoryIcon(name: string): { icon: keyof typeof Ionicons.glyphMap; color: string } {
+  const lower = name.toLowerCase();
+  for (const [key, val] of Object.entries(CATEGORY_ICON_MAP)) {
+    if (key !== 'default' && lower.includes(key)) {
+      return val;
+    }
+  }
+  return CATEGORY_ICON_MAP.default;
+}
+
+function FancyCategoryIcon({ name, hasImage, imageUri }: { name: string; hasImage: boolean; imageUri?: string | null }) {
+  if (hasImage && imageUri) {
+    return <FallbackImage uri={imageUri} style={styles.thumb} widthHint={120} contentFit="contain" />;
+  }
+  const { icon, color } = getCategoryIcon(name);
+  return (
+    <View style={[styles.fancyIconWrap, { backgroundColor: color + '20' }]}>
+      <Ionicons name={icon} size={26} color={color} />
+    </View>
+  );
+}
+
+function FancySubIcon({ name, hasImage, imageUri }: { name: string; hasImage: boolean; imageUri?: string | null }) {
+  if (hasImage && imageUri) {
+    return <FallbackImage uri={imageUri} style={styles.subThumb} widthHint={80} contentFit="contain" />;
+  }
+  const { icon, color } = getCategoryIcon(name);
+  return (
+    <View style={[styles.fancySubIconWrap, { backgroundColor: color + '20' }]}>
+      <Ionicons name={icon} size={18} color={color} />
+    </View>
+  );
+}
+
 export default function CategoriesScreen() {
   const navigation = useNavigation<Nav>();
   const [tree, setTree] = useState<Node[]>([]);
@@ -99,7 +176,7 @@ export default function CategoriesScreen() {
                 }}
                 activeOpacity={0.8}
               >
-                <FallbackImage uri={item.image_url} style={styles.thumb} widthHint={120} contentFit="contain" />
+                <FancyCategoryIcon name={item.name} hasImage={!!item.image_url} imageUri={item.image_url} />
                 <View style={styles.meta}>
                   <Text style={styles.name}>{item.name}</Text>
                   <Text style={styles.count}>
@@ -128,7 +205,7 @@ export default function CategoriesScreen() {
                         navigation.navigate('Products', { categoryId: child.id, categoryName: child.name })
                       }
                     >
-                      <FallbackImage uri={child.image_url} style={styles.subThumb} widthHint={80} contentFit="contain" />
+                      <FancySubIcon name={child.name} hasImage={!!child.image_url} imageUri={child.image_url} />
                       <Text style={styles.subName}>{child.name}</Text>
                       <Ionicons name="chevron-forward" size={16} color={colors.gray600} />
                     </TouchableOpacity>
@@ -161,6 +238,20 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12 },
   thumb: { width: 52, height: 52, borderRadius: 12, backgroundColor: colors.gray100 },
+  fancyIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fancySubIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   meta: { flex: 1 },
   name: { fontWeight: '700', color: colors.navy900 },
   count: { marginTop: 2, fontSize: 12, color: colors.gray600 },

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, Animated, StyleSheet, Platform } from 'react-native';
+import { View, Text, Pressable, Animated, StyleSheet, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -12,7 +12,7 @@ type IconName = keyof typeof Ionicons.glyphMap;
 // solid (filled) variant when the tab is active.
 const ICONS: Record<string, { active: IconName; inactive: IconName; label: string }> = {
   Home: { active: 'home', inactive: 'home-outline', label: 'Home' },
-  Saved: { active: 'heart', inactive: 'heart-outline', label: 'Saved' },
+  Search: { active: 'search', inactive: 'search-outline', label: 'Search' },
   Categories: { active: 'grid', inactive: 'grid-outline', label: 'Categories' },
   Cart: { active: 'cart', inactive: 'cart-outline', label: 'Cart' },
   Profile: { active: 'person', inactive: 'person-outline', label: 'Profile' },
@@ -57,7 +57,7 @@ function TabItem({
   const iconColor = isFocused ? colors.navy900 : colors.gray600;
 
   if (isCenter) {
-    // Elevated middle button
+    // Elevated middle button with Spraxe logo icon
     const lift = scale.interpolate({ inputRange: [0, 1], outputRange: [0, -4] });
     return (
       <Pressable
@@ -76,7 +76,11 @@ function TabItem({
             { transform: [{ scale: press }, { translateY: lift }] },
           ]}
         >
-          <Ionicons name={isFocused ? cfg.active : cfg.inactive} size={26} color={colors.white} />
+          <Image
+            source={require('../../assets/spraxe_icon.png')}
+            style={{ width: 28, height: 28 }}
+            resizeMode="contain"
+          />
         </Animated.View>
         <Text style={[styles.label, { color: iconColor, fontWeight: isFocused ? '700' : '500' }]}>
           {cfg.label}

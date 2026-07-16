@@ -4,7 +4,9 @@
     "categories": "Categories",
     "cart": "Cart",
     "account": "Account",
-    "search": "Search"
+    "search": "Search",
+    "saved": "Saved",
+    "wishlist": "Wishlist"
   },
   "home": {
     "featuredProducts": "Featured Products",
@@ -12,7 +14,11 @@
     "shopByCategory": "Shop by Category",
     "seeAll": "See all",
     "whyShopWithSpraxe": "Why Shop With Spraxe",
-    "failedToLoad": "Failed to load"
+    "failedToLoad": "Failed to load",
+    "featuredAds": "Featured Ads",
+    "newArrivals": "New Arrivals",
+    "featured": "Featured",
+    "categories": "Categories"
   },
   "product": {
     "price": "Price",
@@ -100,7 +106,7 @@
     "yourAccount": "Your Account",
     "signInToManage": "Sign in to manage your account",
     "address": "Address",
-    "saved": "Saved",
+    "saved": "Saved Items",
     "profileUpdated": "Your profile has been updated.",
     "error": "Error",
     "couldNotSaveProfile": "Could not save profile",
@@ -139,7 +145,9 @@
     "all": "All",
     "searchProducts": "Search products",
     "noProductsFound": "No products found",
-    "failedToLoadProducts": "Failed to load products"
+    "failedToLoadProducts": "Failed to load products",
+    "seeAll": "See All",
+    "sortBy": "Sort By"
   },
   "language": {
     "english": "EN",

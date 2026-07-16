@@ -36,7 +36,7 @@ export default function CompareScreen() {
           <Text style={styles.stock}>
             {(item.stock_quantity ?? 0) > 0 ? 'In stock' : 'Out of stock'}
           </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { id: item.id, slug: item.slug ?? undefined, name: item.name })}>
+          <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { slug: item.slug ?? item.id, name: item.name })}>
             <Text style={styles.link}>View</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => remove(item.id)}>

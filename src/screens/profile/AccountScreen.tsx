@@ -69,6 +69,11 @@ export default function AccountScreen() {
           <Text style={styles.linkText}>{t('profile.helpSupport')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
         </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Wishlist')}>
+          <Ionicons name="heart-outline" size={22} color={colors.navy900} />
+          <Text style={styles.linkText}>{t('profile.myWishlist')}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.gray600} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('TrackOrder')}>
           <Ionicons name="locate-outline" size={22} color={colors.navy900} />
           <Text style={styles.linkText}>Track order</Text>

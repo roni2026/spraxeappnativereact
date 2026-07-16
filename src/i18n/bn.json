@@ -4,7 +4,9 @@
     "categories": "ক্যাটাগরি",
     "cart": "কার্ট",
     "account": "অ্যাকাউন্ট",
-    "search": "সার্চ"
+    "search": "সার্চ",
+    "saved": "সংরক্ষিত",
+    "wishlist": "উইশলিস্ট"
   },
   "home": {
     "featuredProducts": "ফিচার্ড পণ্য",
@@ -12,7 +14,11 @@
     "shopByCategory": "ক্যাটাগরি অনুযায়ী কেনাকাটা",
     "seeAll": "সব দেখুন",
     "whyShopWithSpraxe": "স্প্র্যাক্সে কেন কেনাকাটা করবেন",
-    "failedToLoad": "লোড করতে ব্যর্থ"
+    "failedToLoad": "লোড করতে ব্যর্থ",
+    "featuredAds": "ফিচার্ড বিজ্ঞাপন",
+    "newArrivals": "নতুন আগমন",
+    "featured": "ফিচার্ড",
+    "categories": "ক্যাটাগরি"
   },
   "product": {
     "price": "মূল্য",
@@ -100,7 +106,7 @@
     "yourAccount": "আপনার অ্যাকাউন্ট",
     "signInToManage": "অ্যাকাউন্ট পরিচালনা করতে সাইন ইন করুন",
     "address": "ঠিকানা",
-    "saved": "সংরক্ষিত",
+    "saved": "সংরক্ষিত আইটেম",
     "profileUpdated": "আপনার প্রোফাইল আপডেট করা হয়েছে।",
     "error": "ত্রুটি",
     "couldNotSaveProfile": "প্রোফাইল সংরক্ষণ করা যায়নি",
@@ -139,7 +145,9 @@
     "all": "সব",
     "searchProducts": "পণ্য সার্চ করুন",
     "noProductsFound": "কোন পণ্য পাওয়া যায়নি",
-    "failedToLoadProducts": "পণ্য লোড করতে ব্যর্থ"
+    "failedToLoadProducts": "পণ্য লোড করতে ব্যর্থ",
+    "seeAll": "সব দেখুন",
+    "sortBy": "ক্রমানুসার"
   },
   "language": {
     "english": "EN",

@@ -5,7 +5,7 @@ import { TabParamList } from './types';
 import { colors } from '../theme/colors';
 import BottomTabBar from './BottomTabBar';
 import HomeScreen from '../screens/home/HomeScreen';
-import WishlistScreen from '../screens/wishlist/WishlistScreen';
+import ProductsScreen from '../screens/products/ProductsScreen';
 import CategoriesScreen from '../screens/categories/CategoriesScreen';
 import CartScreen from '../screens/cart/CartScreen';
 import AccountScreen from '../screens/profile/AccountScreen';
@@ -14,7 +14,7 @@ const Tab = createBottomTabNavigator<TabParamList>();
 
 /**
  * Primary bottom-tab navigation:
- *   Home · Saved (favorites) · Categories (center) · Cart · Profile
+ *   Home · Search · Categories (center) · Cart · Profile
  * Rendered with a custom, buttery-smooth animated tab bar (see BottomTabBar).
  *
  * The tab screens hide the native header, so we wrap the navigator in a
@@ -34,7 +34,7 @@ export default function TabNavigator() {
         }}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Saved" component={WishlistScreen} />
+        <Tab.Screen name="Search" component={ProductsScreen} />
         <Tab.Screen name="Categories" component={CategoriesScreen} />
         <Tab.Screen name="Cart" component={CartScreen} />
         <Tab.Screen name="Profile" component={AccountScreen} />

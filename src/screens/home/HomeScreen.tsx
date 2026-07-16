@@ -9,6 +9,7 @@ import {
   FlatList,
   Dimensions,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -21,25 +22,22 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import {
   getBestSellers,
-  getCategories,
   getFeatureCards,
   getHeroImages,
   getInfoCarouselImages,
   getFeaturedProducts,
   getNewArrivals,
 } from '../../data/catalog';
-import { Category, FeatureCard, FeaturedImage, Product } from '../../types/models';
+import { FeatureCard, FeaturedImage, Product } from '../../types/models';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../../components/LanguageToggle';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 const { width } = Dimensions.get('window');
-const BANNER_W = width - 32;
 
 interface HomeCacheData {
   banners: FeaturedImage[];
   infoCarousel: FeaturedImage[];
-  categories: Category[];
   bestSellers: Product[];
   featured: Product[];
   newArrivals: Product[];
@@ -72,7 +70,6 @@ export default function HomeScreen() {
 
   const [banners, setBanners] = useState<FeaturedImage[]>([]);
   const [infoCarousel, setInfoCarousel] = useState<FeaturedImage[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [featured, setFeatured] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
@@ -93,7 +90,6 @@ export default function HomeScreen() {
       const d = homeCache.data;
       setBanners(d.banners);
       setInfoCarousel(d.infoCarousel);
-      setCategories(d.categories);
       setBestSellers(d.bestSellers);
       setFeatured(d.featured);
       setNewArrivals(d.newArrivals);
@@ -103,10 +99,9 @@ export default function HomeScreen() {
     }
 
     try {
-      const [heroImages, infoImages, cats, featuredProds, bestProds, newProds, featureCards] = await Promise.all([
+      const [heroImages, infoImages, featuredProds, bestProds, newProds, featureCards] = await Promise.all([
         getHeroImages(),
         getInfoCarouselImages(),
-        getCategories(),
         getFeaturedProducts(),
         getBestSellers(),
         getNewArrivals(),
@@ -116,7 +111,6 @@ export default function HomeScreen() {
       const data: HomeCacheData = {
         banners: heroImages,
         infoCarousel: infoImages,
-        categories: cats,
         bestSellers: bestProds,
         featured: featuredProds,
         newArrivals: newProds,
@@ -126,7 +120,6 @@ export default function HomeScreen() {
 
       setBanners(heroImages);
       setInfoCarousel(infoImages);
-      setCategories(cats);
       setBestSellers(bestProds);
       setFeatured(featuredProds);
       setNewArrivals(newProds);
@@ -183,35 +176,19 @@ export default function HomeScreen() {
     );
   }
 
-  const renderProductGrid = (products: Product[]) => {
-    const pairs: Product[][] = [];
-    for (let i = 0; i < products.length; i += 2) {
-      pairs.push(products.slice(i, i + 2));
-    }
-    return pairs.map((pair, idx) => (
-      <View key={idx} style={styles.row}>
-        {pair.map((p) => (
-          <View key={p.id} style={styles.gridCell}>
-            <ProductCard
-              product={p}
-              onPress={() => navigation.navigate('ProductDetail', { id: p.slug ?? p.id, name: p.name })}
-              onAddToCart={() => addToCart(p)}
-            />
-          </View>
-        ))}
-      </View>
-    ));
-  };
-
   return (
     <ScrollView
       style={styles.flex}
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      {/* Header bar */}
+      {/* Header bar with logo image */}
       <View style={styles.topBar}>
-        <Text style={styles.logo}>SPRAXE</Text>
+        <Image
+          source={require('../../../assets/header_logo.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <LanguageToggle />
           <TouchableOpacity onPress={() => navigation.navigate('Products')}>
@@ -220,7 +197,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Hero Banner Carousel */}
+      {/* Hero Banner Carousel - full width, no cropping */}
       {banners.length > 0 && (
         <View style={styles.bannerWrap}>
           <ScrollView
@@ -245,9 +222,9 @@ export default function HomeScreen() {
                 style={styles.banner}
               >
                 <FallbackImage
-                  uri={b.image_url}
+                  uri={b.mobile_image_url || b.image_url}
                   style={styles.bannerImg}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
                 {(b.title || b.description) && (
                   <View style={styles.bannerOverlay}>
@@ -286,35 +263,6 @@ export default function HomeScreen() {
               );
             })}
           </View>
-        </View>
-      )}
-
-      {/* Categories */}
-      {categories.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={categories}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.categoryChip}
-                onPress={() => navigation.navigate('Products', { categoryId: item.id })}
-              >
-                <FallbackImage
-                  uri={item.image_url}
-                  style={styles.categoryImg}
-                  resizeMode="cover"
-                />
-                <Text style={styles.categoryName} numberOfLines={2}>
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={styles.rail}
-          />
         </View>
       )}
 
@@ -361,11 +309,11 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Featured Products */}
-      {featured.length > 0 && (
+      {/* New Arrivals - 8 ads (shown first) */}
+      {newArrivals.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
+            <Text style={styles.sectionTitle}>{t('home.newArrivals')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Products')}>
               <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
             </TouchableOpacity>
@@ -373,13 +321,13 @@ export default function HomeScreen() {
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={featured}
+            data={newArrivals.slice(0, 8)}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View style={{ width: 160, marginRight: 12 }}>
                 <ProductCard
                   product={item}
-                  onPress={() => navigation.navigate('ProductDetail', { id: item.slug ?? item.id, name: item.name })}
+                  onPress={() => navigation.navigate('ProductDetail', { slug: item.slug ?? item.id, name: item.name })}
                   onAddToCart={() => addToCart(item)}
                 />
               </View>
@@ -389,7 +337,35 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Best Sellers */}
+      {/* Featured Products - 6 ads */}
+      {featured.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('home.featuredAds')}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Products')}>
+              <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={featured.slice(0, 6)}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={{ width: 160, marginRight: 12 }}>
+                <ProductCard
+                  product={item}
+                  onPress={() => navigation.navigate('ProductDetail', { slug: item.slug ?? item.id, name: item.name })}
+                  onAddToCart={() => addToCart(item)}
+                />
+              </View>
+            )}
+            contentContainerStyle={styles.rail}
+          />
+        </View>
+      )}
+
+      {/* Best Sellers - 6 ads */}
       {bestSellers.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -401,41 +377,13 @@ export default function HomeScreen() {
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={bestSellers}
+            data={bestSellers.slice(0, 6)}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View style={{ width: 160, marginRight: 12 }}>
                 <ProductCard
                   product={item}
-                  onPress={() => navigation.navigate('ProductDetail', { id: item.slug ?? item.id, name: item.name })}
-                  onAddToCart={() => addToCart(item)}
-                />
-              </View>
-            )}
-            contentContainerStyle={styles.rail}
-          />
-        </View>
-      )}
-
-      {/* New Arrivals */}
-      {newArrivals.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>New Arrivals</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Products')}>
-              <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={newArrivals}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={{ width: 160, marginRight: 12 }}>
-                <ProductCard
-                  product={item}
-                  onPress={() => navigation.navigate('ProductDetail', { id: item.slug ?? item.id, name: item.name })}
+                  onPress={() => navigation.navigate('ProductDetail', { slug: item.slug ?? item.id, name: item.name })}
                   onAddToCart={() => addToCart(item)}
                 />
               </View>
@@ -460,9 +408,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  logo: { fontSize: 22, fontWeight: '900', color: colors.navy900, letterSpacing: 1 },
+  logoImage: {
+    width: 120,
+    height: 40,
+  },
   bannerWrap: { marginBottom: 16 },
-  banner: { width, marginLeft: -16, height: 200 },
+  banner: { width, marginLeft: -16, height: 220 },
   bannerImg: { width: '100%', height: '100%' },
   bannerOverlay: {
     position: 'absolute',
@@ -482,9 +433,6 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.gray900, marginBottom: 12 },
   seeAll: { color: colors.orange500, fontWeight: '600' },
   rail: { gap: 12, paddingRight: 8 },
-  categoryChip: { alignItems: 'center', width: 72 },
-  categoryImg: { width: 56, height: 56, backgroundColor: colors.gray100, borderRadius: 28 },
-  categoryName: { fontSize: 11, color: colors.gray900, marginTop: 6, textAlign: 'center' },
   grid: { paddingBottom: 4 },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
   gridCell: { width: '48%', marginBottom: 12 },

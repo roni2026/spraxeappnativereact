@@ -109,7 +109,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
         .eq('is_active', true)
         .eq('is_featured', true)
         .is('color_name', null)
-        .limit(20),
+        .limit(6),
     [] as Product[],
   );
 }
@@ -124,7 +124,7 @@ export async function getBestSellers(): Promise<Product[]> {
         .eq('is_active', true)
         .is('color_name', null)
         .order('total_sales', { ascending: false })
-        .limit(20),
+        .limit(6),
     [] as Product[],
   );
 }
@@ -139,7 +139,7 @@ export async function getNewArrivals(): Promise<Product[]> {
         .eq('is_active', true)
         .is('color_name', null)
         .order('created_at', { ascending: false })
-        .limit(20),
+        .limit(8),
     [] as Product[],
   );
 }
@@ -149,6 +149,7 @@ export async function searchProducts(
   categoryId?: string | null,
   page = 0,
   pageSize = 20,
+  sort?: string | null,
 ): Promise<Product[]> {
   return safe(
     'searchProducts',
@@ -164,24 +165,62 @@ export async function searchProducts(
       if (categoryId && categoryId.trim().length > 0) {
         q = q.eq('category_id', categoryId);
       }
+      // Apply server-side sorting
+      switch (sort) {
+        case 'price-asc':
+          q = q.order('price', { ascending: true });
+          break;
+        case 'price-desc':
+          q = q.order('price', { ascending: false });
+          break;
+        case 'name-asc':
+          q = q.order('name', { ascending: true });
+          break;
+        case 'name-desc':
+          q = q.order('name', { ascending: false });
+          break;
+        case 'best-selling':
+          q = q.order('total_sales', { ascending: false });
+          break;
+        case 'newest':
+        default:
+          q = q.order('created_at', { ascending: false });
+          break;
+      }
       return q.range(page * pageSize, (page + 1) * pageSize - 1);
     },
     [] as Product[],
   );
 }
 
-/** Look up a product by slug, falling back to matching by id. */
+/** Look up a product by slug, falling back to matching by id only if the slug is a valid UUID. */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
+  // Check if the provided string looks like a UUID
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const isUuid = UUID_RE.test(slug);
+
   return safe(
     'getProductBySlug',
-    () =>
-      supabase
+    () => {
+      if (isUuid) {
+        // If it's a UUID, try both slug and id match
+        return supabase
+          .from('products')
+          .select(
+            'id, name, slug, description, price, base_price, retail_price, images, category_id, is_active, is_featured, stock_quantity, total_sales, color_group_id, color_name, color_hex, created_at',
+          )
+          .or(`slug.eq.${slug},id.eq.${slug}`)
+          .maybeSingle();
+      }
+      // For non-UUID slugs (like "xiaomi-tv-box-s-2nd-gen..."), only match by slug
+      return supabase
         .from('products')
         .select(
           'id, name, slug, description, price, base_price, retail_price, images, category_id, is_active, is_featured, stock_quantity, total_sales, color_group_id, color_name, color_hex, created_at',
         )
-        .or(`slug.eq.${slug},id.eq.${slug}`)
-        .maybeSingle(),
+        .eq('slug', slug)
+        .maybeSingle();
+    },
     null as Product | null,
   );
 }
