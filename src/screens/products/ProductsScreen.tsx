@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import ProductCard from '../../components/ProductCard';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { getCategories, searchProducts } from '../../data/catalog';
@@ -142,6 +143,7 @@ export default function ProductsScreen() {
 
   return (
     <View style={styles.flex}>
+      <ScreenHeader showSearch />
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color={colors.gray600} />
         <TextInput

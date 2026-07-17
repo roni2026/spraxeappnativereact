@@ -22,9 +22,9 @@ export default function RootNavigator() {
     <Stack.Navigator
       initialRouteName="Splash"
       screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.navy900,
-        headerTitleStyle: { fontWeight: '700' },
+        headerStyle: { backgroundColor: colors.navy900 },
+        headerTintColor: colors.white,
+        headerTitleStyle: { fontWeight: '700', color: colors.white },
         contentStyle: { backgroundColor: colors.background },
       }}
     >

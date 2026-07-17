@@ -10,6 +10,7 @@ import {
   Dimensions,
   RefreshControl,
   Image,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -185,25 +186,27 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.flex}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      {/* Header bar with logo image */}
+    <View style={styles.flex}>
+      {/* Fixed header bar with navy background and white logo */}
       <View style={styles.topBar}>
         <Image
-          source={require('../../../assets/header_logo.png')}
+          source={require('../../../assets/header_logo_white.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <LanguageToggle />
           <TouchableOpacity onPress={() => navigation.navigate('Products')}>
-            <Ionicons name="search-outline" size={22} color={colors.navy900} />
+            <Ionicons name="search-outline" size={22} color={colors.white} />
           </TouchableOpacity>
         </View>
       </View>
+
+      <ScrollView
+        style={styles.scrollArea}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
 
       {/* Hero Banner Carousel - full width, no cropping */}
       {banners.length > 0 && (
@@ -402,23 +405,43 @@ export default function HomeScreen() {
       )}
 
       <View style={{ height: 24 }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
+  scrollArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: colors.navy900,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'web' ? 12 : 8,
+    paddingBottom: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: { elevation: 4 },
+      web: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+    }),
   },
   logoImage: {
     width: 120,
-    height: 40,
+    height: 36,
   },
   bannerWrap: { marginBottom: 16 },
   banner: { width, marginLeft: -16, height: 220 },

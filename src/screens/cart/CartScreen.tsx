@@ -16,6 +16,7 @@ import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { formatCurrency } from '../../theme/theme';
 import FallbackImage from '../../components/FallbackImage';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -143,7 +144,9 @@ export default function CartScreen() {
   }
 
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+    <View style={styles.flex}>
+      <ScreenHeader title={t('cart.yourCart')} />
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t('cart.yourCart')}</Text>
 
       {items.map((it) => (
@@ -283,12 +286,14 @@ export default function CartScreen() {
         )}
       </TouchableOpacity>
       <View style={{ height: 24 }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
+  scroll: { flex: 1, backgroundColor: colors.background },
   content: { padding: 16 },
   center: {
     flex: 1,

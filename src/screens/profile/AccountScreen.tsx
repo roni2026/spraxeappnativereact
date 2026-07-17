@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../context/AuthContext';
 import { signOut, updateProfile } from '../../data/auth';
 import { Profile } from '../../types/models';
@@ -44,7 +45,9 @@ export default function AccountScreen() {
   // logging in / creating an account is optional, plus the usual shortcuts.
   if (!userId || isAnonymous) {
     return (
-      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+      <View style={styles.flex}>
+        <ScreenHeader title={t('profile.yourAccount')} />
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.avatarWrap}>
           <Ionicons name="person-circle-outline" size={72} color={colors.navy900} />
           <Text style={styles.name}>{t('profile.yourAccount')}</Text>
@@ -95,6 +98,7 @@ export default function AccountScreen() {
         </View>
         <View style={{ height: 24 }} />
       </ScrollView>
+    </View>
     );
   }
 
@@ -138,8 +142,10 @@ export default function AccountScreen() {
   };
 
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
-      <View style={styles.avatarWrap}>
+    <View style={styles.flex}>
+      <ScreenHeader title={t('profile.yourAccount')} />
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+        <View style={styles.avatarWrap}>
         <Ionicons name="person-circle" size={72} color={colors.navy900} />
         <Text style={styles.name}>{profile?.full_name || t('profile.yourAccount')}</Text>
         {profile?.email ? <Text style={styles.email}>{profile.email}</Text> : null}
@@ -221,12 +227,14 @@ export default function AccountScreen() {
         <Text style={styles.logoutText}>{t('profile.logout')}</Text>
       </TouchableOpacity>
       <View style={{ height: 24 }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
+  scroll: { flex: 1, backgroundColor: colors.background },
   content: { padding: 16 },
   center: {
     flex: 1,

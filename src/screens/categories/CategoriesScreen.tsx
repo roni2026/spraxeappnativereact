@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import FallbackImage from '../../components/FallbackImage';
+import ScreenHeader from '../../components/ScreenHeader';
 import { getCategoryTree } from '../../data/catalog';
 import { Category } from '../../types/models';
 import { prefetchImages } from '../../lib/cloudinary';
@@ -152,9 +153,7 @@ export default function CategoriesScreen() {
 
   return (
     <View style={styles.flex}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Categories</Text>
-      </View>
+      <ScreenHeader title="Categories" showSearch />
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color={colors.gray600} />
         <TextInput

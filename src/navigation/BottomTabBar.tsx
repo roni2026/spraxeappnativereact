@@ -77,7 +77,7 @@ function TabItem({
           ]}
         >
           <Image
-            source={require('../../assets/spraxe_icon.png')}
+            source={require('../../assets/spraxe_icon_white.png')}
             style={{ width: 28, height: 28 }}
             resizeMode="contain"
           />
@@ -123,6 +123,11 @@ function TabItem({
 export default function BottomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { count } = useCart();
+
+  // Hide the bottom tab bar on web/desktop — navigation is via the top bar there.
+  if (Platform.OS === 'web') {
+    return null;
+  }
 
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
