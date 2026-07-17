@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Spraxe",
-    "slug": "spraxe",
-    "scheme": "spraxe",
+    "name": "SohojKenaBeca",
+    "slug": "sohojkenabeca",
+    "scheme": "sohojkenabeca",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -40,7 +40,10 @@
         "expo-build-properties",
         {
           "android": {
-            "kotlinVersion": "1.9.24"
+            "kotlinVersion": "1.9.24",
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
           },
           "ios": {
             "newArchEnabled": false
