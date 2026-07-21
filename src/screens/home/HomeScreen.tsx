@@ -82,6 +82,8 @@ export default function HomeScreen() {
   const [activeInfoSlide, setActiveInfoSlide] = useState(0);
   const bannerTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const infoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const bannerRef = useRef<ScrollView>(null);
+  const infoRef = useRef<ScrollView>(null);
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -145,22 +147,33 @@ export default function HomeScreen() {
     loadData();
   }, [loadData]);
 
-  // Auto-scroll banners
+  // Auto-scroll banners. The timer must actually scroll the carousel (not just
+  // move the dot) — previously it only updated `activeBanner` state, so the
+  // hero never advanced on its own and looked broken/janky.
   useEffect(() => {
     if (banners.length <= 1) return;
     bannerTimer.current = setInterval(() => {
-      setActiveBanner((p) => (p + 1) % banners.length);
+      setActiveBanner((p) => {
+        const next = (p + 1) % banners.length;
+        bannerRef.current?.scrollTo({ x: next * width, animated: true });
+        return next;
+      });
     }, 4000);
     return () => {
       if (bannerTimer.current) clearInterval(bannerTimer.current);
     };
   }, [banners.length]);
 
-  // Auto-scroll info carousel
+  // Auto-scroll info carousel (item width is screen width minus the 16px page
+  // padding on each side).
   useEffect(() => {
     if (infoCarousel.length <= 1) return;
     infoTimer.current = setInterval(() => {
-      setActiveInfoSlide((p) => (p + 1) % infoCarousel.length);
+      setActiveInfoSlide((p) => {
+        const next = (p + 1) % infoCarousel.length;
+        infoRef.current?.scrollTo({ x: next * (width - 32), animated: true });
+        return next;
+      });
     }, 3500);
     return () => {
       if (infoTimer.current) clearInterval(infoTimer.current);
@@ -212,14 +225,16 @@ export default function HomeScreen() {
       {banners.length > 0 && (
         <View style={styles.bannerWrap}>
           <ScrollView
+            ref={bannerRef}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onScroll={(e) => {
+            decelerationRate="fast"
+            onMomentumScrollEnd={(e) => {
               const idx = Math.round(e.nativeEvent.contentOffset.x / width);
               setActiveBanner(idx);
             }}
-            scrollEventThrottle={200}
+            scrollEventThrottle={16}
           >
             {banners.map((b, i) => (
               <TouchableOpacity
@@ -282,14 +297,16 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.infoCarouselWrap}>
             <ScrollView
+              ref={infoRef}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              onScroll={(e) => {
+              decelerationRate="fast"
+              onMomentumScrollEnd={(e) => {
                 const idx = Math.round(e.nativeEvent.contentOffset.x / (width - 32));
                 setActiveInfoSlide(idx);
               }}
-              scrollEventThrottle={200}
+              scrollEventThrottle={16}
             >
               {infoCarousel.map((img) => (
                 <View key={img.id} style={styles.infoCarouselItem}>
@@ -298,11 +315,6 @@ export default function HomeScreen() {
                     style={styles.infoCarouselImg}
                     resizeMode="cover"
                   />
-                  {img.title && (
-                    <View style={styles.infoCarouselOverlay}>
-                      <Text style={styles.infoCarouselTitle}>{img.title}</Text>
-                    </View>
-                  )}
                 </View>
               ))}
             </ScrollView>

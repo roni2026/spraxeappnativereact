@@ -61,6 +61,12 @@ export default function ProductsScreen() {
   const [sortBy, setSortBy] = useState<SortKey>('newest');
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const allProductsRef = useRef<Product[]>([]);
+  // `loading` blanks the whole screen with a big spinner — we only want that on
+  // the very first load. For every debounced keystroke/filter change after that
+  // we keep the existing results on screen and show a small inline spinner, so
+  // typing a search stays smooth instead of flashing an empty loading screen.
+  const [searching, setSearching] = useState(false);
+  const initialLoad = useRef(true);
 
   useEffect(() => {
     getCategories()
@@ -69,7 +75,8 @@ export default function ProductsScreen() {
   }, []);
 
   const runSearch = useCallback(async () => {
-    setLoading(true);
+    if (initialLoad.current) setLoading(true);
+    else setSearching(true);
     setError(null);
     setPage(0);
     pageRef.current = 0;
@@ -89,6 +96,8 @@ export default function ProductsScreen() {
       setError(e?.message ?? t('common.failedToLoadProducts'));
     } finally {
       setLoading(false);
+      setSearching(false);
+      initialLoad.current = false;
     }
   }, [query, selectedCategory, sortBy]);
 
@@ -154,10 +163,14 @@ export default function ProductsScreen() {
           onChangeText={setQuery}
           returnKeyType="search"
         />
-        {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery('')}>
-            <Ionicons name="close-circle" size={18} color={colors.gray600} />
-          </TouchableOpacity>
+        {searching ? (
+          <ActivityIndicator size="small" color={colors.gray600} />
+        ) : (
+          query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <Ionicons name="close-circle" size={18} color={colors.gray600} />
+            </TouchableOpacity>
+          )
         )}
       </View>
 

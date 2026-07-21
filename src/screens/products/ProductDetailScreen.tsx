@@ -111,6 +111,22 @@ export default function ProductDetailScreen() {
     load();
   }, [load]);
 
+  // Prefetch every gallery frame at display width so swipes are cache hits.
+  // IMPORTANT: this hook must stay ABOVE the early returns below. Placing it
+  // after the `if (loading)` / `if (error)` returns changed the number of
+  // hooks between renders (Rules of Hooks violation), which threw
+  // "Rendered more hooks than during the previous render" and made every
+  // product page fail with "unexpected error, try again".
+  useEffect(() => {
+    const imgs = product?.images && product.images.length > 0 ? product.images : [];
+    const urls = (imgs.filter(Boolean) as string[])
+      .map((u) => optimizeImageUrl(u, Math.round(width)))
+      .filter(Boolean) as string[];
+    urls.forEach((u) => {
+      ExpoImage.prefetch(u).catch(() => {});
+    });
+  }, [product?.id]);
+
   const requireLogin = (): boolean => {
     if (!userId) {
       navigation.navigate('Login');
@@ -195,16 +211,6 @@ export default function ProductDetailScreen() {
   }
 
   const images = product.images && product.images.length > 0 ? product.images : [undefined];
-
-  // Prefetch every gallery frame at display width so swipes are cache hits.
-  useEffect(() => {
-    const urls = (images.filter(Boolean) as string[])
-      .map((u) => optimizeImageUrl(u, Math.round(width)))
-      .filter(Boolean) as string[];
-    urls.forEach((u) => {
-      ExpoImage.prefetch(u).catch(() => {});
-    });
-  }, [product?.id]);
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
